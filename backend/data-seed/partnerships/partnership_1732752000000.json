@@ -1,0 +1,14 @@
+{
+  "id": "part_001",
+  "organizationName": "Tech Solutions Inc.",
+  "contactPerson": "James Wilson",
+  "email": "james.wilson@techsolutions.com",
+  "phone": "+1234567897",
+  "partnershipType": "corporate",
+  "contributionAmount": 5000,
+  "startDate": "2024-11-28T00:00:00Z",
+  "endDate": "2025-11-28T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Logo on Website", "Event Recognition", "Tax Receipt"],
+  "notes": "Annual technology sponsor providing equipment and funding"
+}

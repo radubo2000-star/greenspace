@@ -1,0 +1,12 @@
+{
+  "id": "vol_002",
+  "name": "Michael Chen",
+  "email": "michael.chen@email.com",
+  "phone": "+1234567891",
+  "skills": ["Photography", "Graphic Design"],
+  "availability": "Flexible",
+  "hoursVolunteered": 40,
+  "status": "Active",
+  "joinDate": "2024-11-29T00:00:00Z",
+  "notes": "Professional photographer offering pro bono services"
+}

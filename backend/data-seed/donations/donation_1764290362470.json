@@ -1,0 +1,11 @@
+{
+  "amount": 50,
+  "isRecurring": false,
+  "paymentMethod": "card",
+  "name": "Test Donor",
+  "email": "donor@example.com",
+  "phone": "+1234567894",
+  "message": "Test donation",
+  "timestamp": "2025-11-28T00:39:22.470Z",
+  "status": "pending"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "vol_001",
+  "name": "Sarah Johnson",
+  "email": "sarah.johnson@email.com",
+  "phone": "+1234567890",
+  "skills": ["Event Planning", "Social Media"],
+  "availability": "Weekends",
+  "hoursVolunteered": 25,
+  "status": "Active",
+  "joinDate": "2024-11-28T00:00:00Z",
+  "notes": "Very enthusiastic and reliable volunteer"
+}

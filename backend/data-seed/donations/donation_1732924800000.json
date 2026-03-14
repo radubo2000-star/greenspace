@@ -1,0 +1,11 @@
+{
+  "amount": "100",
+  "isRecurring": true,
+  "paymentMethod": "card",
+  "name": "Andrei Georgescu",
+  "email": "andrei.georgescu@example.com",
+  "phone": "0741234567",
+  "message": "",
+  "timestamp": "2024-11-25T09:00:00.000Z",
+  "status": "completed"
+}

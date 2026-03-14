@@ -1,0 +1,14 @@
+{
+  "id": "part_003",
+  "organizationName": "Local Community Bank",
+  "contactPerson": "Thomas Brown",
+  "email": "thomas.brown@communitybank.com",
+  "phone": "+1234567899",
+  "partnershipType": "institution",
+  "contributionAmount": 10000,
+  "startDate": "2024-11-30T00:00:00Z",
+  "endDate": "2025-11-30T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Premier Logo Placement", "Event Naming Rights", "Board Recognition"],
+  "notes": "Major financial partner supporting core operations"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "mem_001",
+  "name": "David Thompson",
+  "email": "david.thompson@email.com",
+  "phone": "+1234567893",
+  "membershipType": "student",
+  "membershipFee": 100,
+  "joinDate": "2024-11-28T00:00:00Z",
+  "renewalDate": "2025-11-28T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Newsletter", "Event Access", "Voting Rights"],
+  "notes": "Founding member"
+}

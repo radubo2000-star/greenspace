@@ -1,0 +1,15 @@
+{
+  "id": "cont_003",
+  "name": "Amanda White",
+  "email": "amanda.white@email.com",
+  "phone": "+1234567802",
+  "organization": "White & Associates",
+  "position": "Partner",
+  "contactType": "Professional Service",
+  "source": "Referral",
+  "dateAdded": "2024-11-30T00:00:00Z",
+  "lastContact": "2024-11-30T00:00:00Z",
+  "status": "Active",
+  "interests": ["Legal Services", "Pro Bono Work"],
+  "notes": "Law firm offering pro bono legal services"
+}

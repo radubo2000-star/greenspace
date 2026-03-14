@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://asociatiagreenspace.ro/sitemap.xml

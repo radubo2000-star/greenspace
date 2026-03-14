@@ -1,0 +1,13 @@
+{
+  "id": "mem_003",
+  "name": "Robert Martinez",
+  "email": "robert.martinez@email.com",
+  "phone": "+1234567895",
+  "membershipType": "family",
+  "membershipFee": 100,
+  "joinDate": "2024-11-30T00:00:00Z",
+  "renewalDate": "2025-11-30T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Newsletter", "Event Access", "Voting Rights"],
+  "notes": "Business owner interested in community development"
+}

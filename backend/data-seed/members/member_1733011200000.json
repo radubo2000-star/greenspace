@@ -1,0 +1,13 @@
+{
+  "id": "mem_004",
+  "name": "Jennifer Lee",
+  "email": "jennifer.lee@email.com",
+  "phone": "+1234567896",
+  "membershipType": "student",
+  "membershipFee": 10,
+  "joinDate": "2024-12-01T00:00:00Z",
+  "renewalDate": "2025-01-01T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Newsletter", "Event Access"],
+  "notes": "Recent graduate, passionate about the cause"
+}

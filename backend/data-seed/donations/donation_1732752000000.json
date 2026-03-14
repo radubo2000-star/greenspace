@@ -1,0 +1,11 @@
+{
+  "amount": "150",
+  "isRecurring": true,
+  "paymentMethod": "card",
+  "name": "Ion Popescu",
+  "email": "ion.popescu@example.com",
+  "phone": "0721234567",
+  "message": "Susțin proiectele voastre de mediu!",
+  "timestamp": "2024-11-15T10:30:00.000Z",
+  "status": "completed"
+}

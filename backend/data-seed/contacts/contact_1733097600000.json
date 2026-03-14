@@ -1,0 +1,15 @@
+{
+  "id": "cont_005",
+  "name": "Rebecca Moore",
+  "email": "rebecca.moore@email.com",
+  "phone": "+1234567804",
+  "organization": "Moore Events",
+  "position": "Event Coordinator",
+  "contactType": "Vendor",
+  "source": "Website Inquiry",
+  "dateAdded": "2024-12-02T00:00:00Z",
+  "lastContact": "2024-12-02T00:00:00Z",
+  "status": "Active",
+  "interests": ["Event Planning", "Fundraising Events"],
+  "notes": "Professional event planner offering discounted services"
+}

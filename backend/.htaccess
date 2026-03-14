@@ -1,0 +1,7 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/asocia17/api-gs"
+PassengerBaseURI "/"
+PassengerNodejs "/home/asocia17/nodevenv/api-gs/18/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppLogFile "/home/asocia17/logs/greenspace-backend.log"

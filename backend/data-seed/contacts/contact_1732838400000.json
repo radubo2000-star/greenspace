@@ -1,0 +1,15 @@
+{
+  "id": "cont_002",
+  "name": "Christopher Taylor",
+  "email": "christopher.taylor@email.com",
+  "phone": "+1234567801",
+  "organization": "Taylor Media Group",
+  "position": "Marketing Director",
+  "contactType": "Media Contact",
+  "source": "Press Release",
+  "dateAdded": "2024-11-29T00:00:00Z",
+  "lastContact": "2024-11-29T00:00:00Z",
+  "status": "Active",
+  "interests": ["Media Coverage", "Community Stories"],
+  "notes": "Interested in covering our community impact stories"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "cont_004",
+  "name": "Daniel Harris",
+  "email": "daniel.harris@email.com",
+  "phone": "+1234567803",
+  "organization": "Harris Real Estate",
+  "position": "Broker",
+  "contactType": "Potential Partner",
+  "source": "Cold Outreach",
+  "dateAdded": "2024-12-01T00:00:00Z",
+  "lastContact": "2024-12-01T00:00:00Z",
+  "status": "Active",
+  "interests": ["Community Development", "Affordable Housing"],
+  "notes": "Interested in partnering on community housing projects"
+}

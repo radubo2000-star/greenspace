@@ -1,0 +1,15 @@
+{
+  "id": "cont_001",
+  "name": "Patricia Davis",
+  "email": "patricia.davis@email.com",
+  "phone": "+1234567800",
+  "organization": "Davis Consulting",
+  "position": "CEO",
+  "contactType": "Potential Donor",
+  "source": "Networking Event",
+  "dateAdded": "2024-11-28T00:00:00Z",
+  "lastContact": "2024-11-28T00:00:00Z",
+  "status": "Active",
+  "interests": ["Education Programs", "Youth Development"],
+  "notes": "Expressed interest in supporting education initiatives"
+}

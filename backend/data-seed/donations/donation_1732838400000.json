@@ -1,0 +1,11 @@
+{
+  "amount": "250",
+  "isRecurring": false,
+  "paymentMethod": "bank",
+  "name": "Maria Ionescu",
+  "email": "maria.ionescu@example.com",
+  "phone": "0731234567",
+  "message": "Pentru plantarea copacilor",
+  "timestamp": "2024-11-20T14:15:00.000Z",
+  "status": "awaiting_transfer"
+}

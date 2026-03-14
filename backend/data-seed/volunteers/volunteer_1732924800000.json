@@ -1,0 +1,12 @@
+{
+  "id": "vol_003",
+  "name": "Emily Rodriguez",
+  "email": "emily.rodriguez@email.com",
+  "phone": "+1234567892",
+  "skills": ["Teaching", "Mentoring"],
+  "availability": "Weekday Evenings",
+  "hoursVolunteered": 15,
+  "status": "Active",
+  "joinDate": "2024-11-30T00:00:00Z",
+  "notes": "Former teacher, great with youth programs"
+}

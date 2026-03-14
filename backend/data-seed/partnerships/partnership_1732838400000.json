@@ -1,0 +1,14 @@
+{
+  "id": "part_002",
+  "organizationName": "Green Earth Foundation",
+  "contactPerson": "Maria Garcia",
+  "email": "maria.garcia@greenearth.org",
+  "phone": "+1234567898",
+  "partnershipType": "ngo",
+  "contributionAmount": 0,
+  "startDate": "2024-11-29T00:00:00Z",
+  "endDate": "2025-11-29T00:00:00Z",
+  "status": "Active",
+  "benefits": ["Joint Events", "Resource Sharing", "Cross-Promotion"],
+  "notes": "Non-monetary partnership for environmental initiatives"
+}
