@@ -703,13 +703,13 @@ const AboutPage = () => {
                     Implică-te Acum
                   </motion.a>
                   <motion.a
-                    href="/proiecte"
+                    href="/initiative/mediu-si-conservare"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl border-2 border-gray-200"
                   >
                     <Leaf className="w-5 h-5" />
-                    Vezi Proiectele Noastre
+                    Vezi Inițiativele Noastre
                   </motion.a>
                 </div>
               </motion.div>

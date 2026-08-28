@@ -16,6 +16,10 @@ import HomePage from './pages/HomePage'
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'))
 const ExperiencesPage = lazy(() => import('./pages/ExperiencesPage'))
+const MediuConservarePage = lazy(() => import('./pages/MediuConservarePage'))
+const EduatieDezvoltarePage = lazy(() => import('./pages/EduatieDezvoltarePage'))
+const VoluntariatComunitatePage = lazy(() => import('./pages/VoluntariatComunitatePage'))
+const DezvoltareDurabilaTurismRegenerativPage = lazy(() => import('./pages/DezvoltareDurabilaTurismRegenerativPage'))
 const SummerCampPage = lazy(() => import('./pages/SummerCampPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const GetInvolvedPage = lazy(() => import('./pages/GetInvolvedPage'))
@@ -57,6 +61,10 @@ function AppContent() {
           <Route path="/despre" element={<AboutPage />} />
           <Route path="/proiecte" element={<ProjectsPage />} />
           <Route path="/experiente" element={<ExperiencesPage />} />
+          <Route path="/initiative/mediu-si-conservare" element={<MediuConservarePage />} />
+          <Route path="/initiative/educatie-si-dezvoltare" element={<EduatieDezvoltarePage />} />
+          <Route path="/initiative/voluntariat-si-comunitate" element={<VoluntariatComunitatePage />} />
+          <Route path="/initiative/dezvoltare-durabila-turism-regenerativ" element={<DezvoltareDurabilaTurismRegenerativPage />} />
           <Route path="/summer-camp" element={<SummerCampPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/galerie" element={<GalleryPage />} />
