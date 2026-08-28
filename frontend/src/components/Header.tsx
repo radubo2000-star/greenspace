@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useBanner } from '../contexts/BannerContext'
@@ -7,9 +7,33 @@ import { useBanner } from '../contexts/BannerContext'
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isInitiativeOpen, setIsInitiativeOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { isBannerVisible } = useBanner()
+
+  const initiativeItems = [
+    {
+      name: '🌱 Mediu & Conservare',
+      href: '/initiative/mediu-si-conservare',
+      description: 'Plantări; ecologizări; acțiuni de protejare și conservare a mediului',
+    },
+    {
+      name: '🎓 Educație & Dezvoltare',
+      href: '/initiative/educatie-si-dezvoltare',
+      description: 'Școala de vară; tabere; workshopuri; acțiuni educaționale în școli; educație non-formală',
+    },
+    {
+      name: '🤝 Voluntariat & Comunitate',
+      href: '/initiative/voluntariat-si-comunitate',
+      description: 'Programe de voluntariat; implicare comunitară; inițiative pentru tineri',
+    },
+    {
+      name: '🛶 Dezvoltare Durabilă & Turism Regenerativ',
+      href: '/initiative/dezvoltare-durabila-turism-regenerativ',
+      description: 'Ture cu caiacul; activități outdoor; promovarea turismului regenerativ; experiențe în natură',
+    },
+  ]
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,8 +46,7 @@ const Header = () => {
   const navItems = [
     { name: 'Acasă', href: '/', type: 'link' },
     { name: 'Despre Noi', href: '/despre', type: 'link' },
-    { name: 'Proiecte', href: '/proiecte', type: 'link' },
-    { name: 'Experiențe', href: '/experiente', type: 'link' },
+    { name: 'Initiative', href: '/initiative/mediu-si-conservare', type: 'dropdown' },
     { name: 'Summer Camp 2027', href: '/summer-camp', type: 'link', special: true },
     { name: 'Galerie', href: '/galerie', type: 'link' },
     { name: 'Raport Activitate', href: '/raport-activitate', type: 'link' },
@@ -33,7 +56,12 @@ const Header = () => {
 
   const handleNavigation = (item: typeof navItems[0]) => {
     setIsMobileMenuOpen(false)
-    
+
+    if (item.type === 'dropdown') {
+      setIsInitiativeOpen(!isInitiativeOpen)
+      return
+    }
+
     if (item.type === 'link') {
       navigate(item.href)
     } else {
@@ -79,27 +107,72 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-7">
             {navItems.map((item, index) => (
-              <motion.button
-                key={item.name}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => handleNavigation(item)}
-                className={`font-medium transition-all relative ${
-                  item.special
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full hover:shadow-lg hover:scale-105'
-                    : `hover:text-primary-600 ${isScrolled ? 'text-gray-700' : 'text-white'}`
-                }`}
-              >
-                {item.name}
-                {item.special && (
-                  <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs font-bold text-gray-900 px-2 py-0.5 rounded-full animate-pulse">
-                    NOU
-                  </span>
+              <div key={item.name} className="relative">
+                <motion.button
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => handleNavigation(item)}
+                  onMouseEnter={() => item.type === 'dropdown' && setIsInitiativeOpen(true)}
+                  onMouseLeave={() => item.type === 'dropdown' && setIsInitiativeOpen(false)}
+                  className={`font-medium transition-all relative flex items-center gap-1 ${
+                    item.special
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full hover:shadow-lg hover:scale-105'
+                      : `hover:text-emerald-600 ${isScrolled ? 'text-gray-700' : 'text-white'}`
+                  }`}
+                >
+                  {item.name}
+                  {item.type === 'dropdown' && (
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${isInitiativeOpen ? 'rotate-180' : ''}`}
+                    />
+                  )}
+                  {item.special && (
+                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs font-bold text-gray-900 px-2 py-0.5 rounded-full animate-pulse">
+                      NOU
+                    </span>
+                  )}
+                </motion.button>
+
+                {/* Initiative Dropdown */}
+                {item.type === 'dropdown' && (
+                  <AnimatePresence>
+                    {isInitiativeOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute left-1/2 -translate-x-1/2 top-full pt-3"
+                        onMouseEnter={() => setIsInitiativeOpen(true)}
+                        onMouseLeave={() => setIsInitiativeOpen(false)}
+                      >
+                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 w-80 overflow-hidden">
+                          {initiativeItems.map((initiative) => (
+                            <button
+                              key={initiative.href}
+                              onClick={() => {
+                                navigate(initiative.href)
+                                setIsInitiativeOpen(false)
+                              }}
+                              className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors"
+                            >
+                              <span className="block font-semibold text-gray-900 text-sm">
+                                {initiative.name}
+                              </span>
+                              <span className="block text-xs text-gray-500 mt-0.5 leading-snug">
+                                {initiative.description}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 )}
-              </motion.button>
+              </div>
             ))}
           </nav>
 
@@ -134,22 +207,51 @@ const Header = () => {
           >
             <nav className="container mx-auto px-4 sm:px-6 py-4 flex flex-col space-y-4 w-full max-w-full">
               {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item)}
-                  className={`font-medium transition-all text-left relative ${
-                    item.special
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-lg hover:shadow-lg'
-                      : 'text-gray-700 hover:text-primary-600'
-                  }`}
-                >
-                  {item.name}
-                  {item.special && (
-                    <span className="ml-2 bg-yellow-400 text-xs font-bold text-gray-900 px-2 py-0.5 rounded-full">
-                      NOU
+                <div key={item.name} className="flex flex-col">
+                  <button
+                    onClick={() => handleNavigation(item)}
+                    className={`font-medium transition-all text-left relative flex items-center justify-between ${
+                      item.special
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-lg hover:shadow-lg'
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
+                  >
+                    <span>
+                      {item.name}
+                      {item.type === 'dropdown' && (
+                        <ChevronDown
+                          className={`inline w-4 h-4 ml-1 transition-transform duration-200 ${
+                            isInitiativeOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      )}
                     </span>
+                    {item.special && (
+                      <span className="ml-2 bg-yellow-400 text-xs font-bold text-gray-900 px-2 py-0.5 rounded-full">
+                        NOU
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Mobile Initiative Submenu */}
+                  {item.type === 'dropdown' && isInitiativeOpen && (
+                    <div className="mt-2 ml-3 border-l-2 border-emerald-200 pl-4 space-y-2">
+                      {initiativeItems.map((initiative) => (
+                        <button
+                          key={initiative.href}
+                          onClick={() => {
+                            navigate(initiative.href)
+                            setIsMobileMenuOpen(false)
+                            setIsInitiativeOpen(false)
+                          }}
+                          className="block w-full text-left text-sm text-gray-600 font-medium hover:text-emerald-600 transition-colors py-1.5"
+                        >
+                          {initiative.name}
+                        </button>
+                      ))}
+                    </div>
                   )}
-                </button>
+                </div>
               ))}
               <button
                 onClick={() => {

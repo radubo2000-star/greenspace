@@ -25,12 +25,12 @@ const Footer = () => {
       { name: 'Valori', href: '/despre', hash: '#valori' },
       { name: 'Raport Activitate', href: '/raport-activitate', hash: '' },
     ],
-    'Activități': [
-      { name: 'Proiecte', href: '/proiecte', hash: '' },
-      { name: 'Experiențe', href: '/experiente', hash: '' },
+    'Initiative': [
+      { name: '🌱 Mediu & Conservare', href: '/initiative/mediu-si-conservare', hash: '' },
+      { name: '🎓 Educație & Dezvoltare', href: '/initiative/educatie-si-dezvoltare', hash: '' },
+      { name: '🤝 Voluntariat & Comunitate', href: '/initiative/voluntariat-si-comunitate', hash: '' },
+      { name: '🛶 Turism Regenerativ', href: '/initiative/dezvoltare-durabila-turism-regenerativ', hash: '' },
       { name: 'Galerie Video', href: '/galerie', hash: '' },
-      { name: 'Ture cu Caiacul', href: '/experiente', hash: '#ture-caiac' },
-      { name: 'Tabere', href: '/experiente', hash: '#tabere' },
     ],
     'Implică-te': [
       { name: '⭐ Redirecționează 3.5%', href: '/implica-te', hash: '#redirectioneaza', featured: true },
