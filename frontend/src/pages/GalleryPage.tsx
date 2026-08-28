@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -8,16 +8,76 @@ import VideoTestimonials from '../components/gallery/VideoTestimonials'
 import BeforeAfterSlider from '../components/gallery/BeforeAfterSlider'
 import LiveStreams from '../components/gallery/LiveStreams'
 import { Video, Users, Repeat, Radio } from 'lucide-react'
+import {
+  subscribeToStories,
+  subscribeToTestimonials,
+  subscribeToBeforeAfterProjects,
+  subscribeToLiveStreams,
+} from '../services/gallery-service'
+
+type TabId = 'stories' | 'testimonials' | 'beforeafter' | 'live'
 
 const GalleryPage = () => {
-  const [activeTab, setActiveTab] = useState<'stories' | 'testimonials' | 'beforeafter' | 'live'>('stories')
+  const [activeTab, setActiveTab] = useState<TabId>('stories')
+  const [hasData, setHasData] = useState<Record<TabId, boolean>>({
+    stories: true,
+    testimonials: true,
+    beforeafter: true,
+    live: true,
+  })
 
-  const tabs = [
+  useEffect(() => {
+    const unsubscribers = [
+      subscribeToStories((stories) => setHasData((prev) => ({ ...prev, stories: stories.length > 0 }))),
+      subscribeToTestimonials((testimonials) => setHasData((prev) => ({ ...prev, testimonials: testimonials.length > 0 }))),
+      subscribeToBeforeAfterProjects((projects) => setHasData((prev) => ({ ...prev, beforeafter: projects.length > 0 }))),
+      subscribeToLiveStreams((streams) => setHasData((prev) => ({ ...prev, live: streams.length > 0 }))),
+    ]
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe())
+  }, [])
+
+  const tabs = ([
     { id: 'stories', name: 'Stories', icon: Video, description: 'Momente din proiecte' },
     { id: 'testimonials', name: 'Testimoniale', icon: Users, description: 'Povești de la voluntari' },
     { id: 'beforeafter', name: 'Before/After', icon: Repeat, description: 'Transformări vizibile' },
     { id: 'live', name: 'Live Streams', icon: Radio, description: 'Evenimente în direct' },
-  ]
+  ] as { id: TabId; name: string; icon: typeof Video; description: string }[]).filter((tab) => hasData[tab.id])
+
+  // If the active tab no longer has data, fall back to the first available one
+  useEffect(() => {
+    if (hasData[activeTab]) return
+    const firstAvailable = (['stories', 'testimonials', 'beforeafter', 'live'] as TabId[]).find((id) => hasData[id])
+    if (firstAvailable) setActiveTab(firstAvailable)
+  }, [hasData, activeTab])
+
+  if (tabs.length === 0) {
+    return (
+      <>
+        <SEO
+          title="Galerie Video & Stories - Asociația Green Space"
+          description="Descoperă momentele speciale din proiectele noastre: stories, testimoniale video, transformări before/after și live streaming evenimente."
+          keywords="galerie video, stories ecologice, testimoniale voluntari, before after ecologizare, live streaming evenimente ecologice"
+          image="/images/gallery-og.jpg"
+        />
+        <Header />
+        <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-green-800/85 to-emerald-700/80 z-10" />
+            <img
+              src="/images/experiences/kaiacedesus.webp"
+              alt="Galerie Video & Stories - Asociația Green Space"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="container mx-auto px-4 pt-40 pb-20 relative z-20 text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Galerie Video & Stories</h1>
+            <p className="text-xl text-gray-100">Conținutul galeriei este în curs de pregătire.</p>
+          </div>
+        </section>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
@@ -73,7 +133,7 @@ const GalleryPage = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`flex flex-col items-center gap-3 px-6 py-6 rounded-2xl transition-all ${
                       activeTab === tab.id
                         ? 'bg-primary-600 text-white shadow-xl scale-105 ring-4 ring-primary-400/50'
@@ -99,7 +159,7 @@ const GalleryPage = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-4 px-6 py-5 rounded-2xl transition-all ${
                       activeTab === tab.id
                         ? 'bg-primary-600 text-white shadow-xl ring-4 ring-primary-400/50'
