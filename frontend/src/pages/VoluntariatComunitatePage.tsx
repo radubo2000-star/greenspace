@@ -31,17 +31,7 @@ const content: InitiativeContent = {
       icon: '🏡',
     },
   ],
-  experiences: [
-    {
-      title: 'Eco Ambasadori',
-      description: 'Un program dedicat tinerilor din comunitate, prin care îi inițiem în drumeții montane și ture cu caiacul și îi implicăm direct în proiecte de ecoturism, oferindu-le oportunități de învățare practică.',
-      image: '/images/experiences/exp1.jpg',
-      location: 'Comunitatea Oltenița',
-      duration: 'Pe parcursul anului',
-      price: 'Participare gratuită',
-      features: ['🥾 Drumeții montane', '🚣 Tabere inițiere caiac', '🌿 Proiecte ecoturism'],
-    },
-  ],
+  experiences: [],
   ctaTitle: 'Vrei să devii voluntar?',
   ctaText:
     'Alătură-te echipei noastre de voluntari și contribuie la construirea unei comunități mai unite, responsabile și implicate.',
