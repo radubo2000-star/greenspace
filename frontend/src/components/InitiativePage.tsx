@@ -6,7 +6,7 @@ import Footer from './Footer'
 import SEO from './SEO'
 import ScrollToTop from './ScrollToTop'
 import { Link } from 'react-router-dom'
-import { ChevronRight, MapPin, Clock, Users, Mail, Phone } from 'lucide-react'
+import { ChevronRight, MapPin, Clock, Users, Phone } from 'lucide-react'
 
 export interface InitiativeActivity {
   title: string
@@ -235,13 +235,6 @@ const InitiativePage = ({ content }: { content: InitiativeContent }) => {
                             ))}
                           </ul>
                         )}
-                        <Link
-                          to="/contact"
-                          className="flex items-center justify-center bg-emerald-600 text-white px-4 py-3 rounded-full font-semibold hover:bg-emerald-700 transition-all hover:scale-105"
-                        >
-                          <Mail className="w-4 h-4 mr-2" />
-                          Solicită Ofertă
-                        </Link>
                       </div>
                     </motion.div>
                   ))}
