@@ -24,7 +24,7 @@ const Header = () => {
     { name: 'Despre Noi', href: '/despre', type: 'link' },
     { name: 'Proiecte', href: '/proiecte', type: 'link' },
     { name: 'Experiențe', href: '/experiente', type: 'link' },
-    { name: 'Summer Camp 2026', href: '/summer-camp', type: 'link', special: true },
+    { name: 'Summer Camp 2027', href: '/summer-camp', type: 'link', special: true },
     { name: 'Galerie', href: '/galerie', type: 'link' },
     { name: 'Raport Activitate', href: '/raport-activitate', type: 'link' },
     { name: 'Implică-te', href: '/implica-te', type: 'link' },

@@ -8,7 +8,9 @@ interface BannerContextType {
 const BannerContext = createContext<BannerContextType | undefined>(undefined);
 
 export const BannerProvider = ({ children }: { children: ReactNode }) => {
-  const [isBannerVisible, setIsBannerVisible] = useState(true);
+  // Banner is hidden by default. To display a banner (e.g. Summer Camp),
+  // set the initial value below to `true`.
+  const [isBannerVisible, setIsBannerVisible] = useState(false);
 
   const closeBanner = () => {
     setIsBannerVisible(false);

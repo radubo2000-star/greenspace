@@ -27,7 +27,7 @@ const Experiences = () => {
       description: 'Aventură, Natură, Comunitate - O experiență de conectare cu natura pe lacul Siriu 💚',
       image: '/images/experiences/eco.jpg',
       location: 'Lacul Siriu, Complex Turistic Izvorul Bucuriei',
-      duration: '27-31 iulie 2026 (5 zile)',
+      duration: '27-31 iulie 2027 (5 zile)',
       difficulty: 'Toate nivelurile (min. 11 ani)',
       price: 'Preț la cerere',
       featured: true,
