@@ -66,7 +66,7 @@ const TopBanner = () => {
               
               <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 overflow-hidden">
                 <span className="font-bold text-xs sm:text-sm md:text-base leading-tight truncate">
-                  🏕️ Summer Camp 2026
+                  🏕️ Summer Camp 2027
                 </span>
                 <span className="hidden xs:inline text-xs sm:text-sm opacity-90 leading-tight flex-shrink-0">
                   •

@@ -528,7 +528,7 @@ const SummerCampPage = () => {
               Înscrieri & Detalii
             </h2>
             <p className="text-xl mb-12 text-green-50">
-              Contactează-ne pentru a-ți rezerva locul la Summer Green Camp 2026
+              Contactează-ne pentru a-ți rezerva locul la Summer Green Camp 2027
             </p>
             
             <div className="grid md:grid-cols-2 gap-6 mb-12">

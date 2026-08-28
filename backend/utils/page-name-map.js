@@ -10,7 +10,7 @@ const PAGE_NAME_MAP = {
   '/despre': 'Despre Noi',
   '/proiecte': 'Proiecte',
   '/experiente': 'Experiențe',
-  '/summer-camp': 'Summer Camp 2026',
+  '/summer-camp': 'Summer Camp 2027',
   '/galerie': 'Galerie',
   '/raport-activitate': 'Raport Activitate',
   '/implica-te': 'Implică-te',
