@@ -46,6 +46,7 @@ const Header = () => {
   const navItems = [
     { name: 'Acasă', href: '/', type: 'link' },
     { name: 'Despre Noi', href: '/despre', type: 'link' },
+    { name: 'Echipa', href: '/echipa', type: 'link' },
     { name: 'Initiative', href: '/initiative/mediu-si-conservare', type: 'dropdown' },
     { name: 'Summer Camp 2027', href: '/summer-camp', type: 'link', special: true },
     { name: 'Galerie', href: '/galerie', type: 'link' },
