@@ -177,6 +177,13 @@ jobs:
         env:
           CPANEL_SSH_KEY: "${{ secrets.CPANEL_SSH_KEY }}"
         run: |
+          if [ -z "$CPANEL_SSH_KEY" ]; then
+              echo "CPANEL_SSH_KEY is EMPTY"
+            exit 1
+          else
+            echo "CPANEL_SSH_KEY is available"
+          fi
+          
           mkdir -p ~/.ssh
           if [ -z "$CPANEL_SSH_KEY" ]; then
             echo "::error::CPANEL_SSH_KEY secret is not set. Add it in Settings -> Secrets -> Actions to enable automatic deployment."
