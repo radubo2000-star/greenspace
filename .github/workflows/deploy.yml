@@ -202,12 +202,14 @@ jobs:
           SSH_HOST: ${{ secrets.CPANEL_SSH_HOST || 'asociatiagreenspace.ro' }}
           SSH_PORT: ${{ secrets.CPANEL_SSH_PORT || '22' }}
           BE_PATH: ${{ secrets.CPANEL_BE_PATH || '/home/asocia17/api-gs' }}
-          SSH_KEY: ${{ runner.home }}/.ssh/id_deploy
+          SSH_KEY: $HOME/.ssh/id_deploy
         run: |
           set -e
           SSH_OPTS="-i $SSH_KEY -p $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
-          TARBALL=deploy-artifacts/greenspace-backend-${GITHUB_SHA:0:8}.tar.gz
+          SCP_OPTS="-i $SSH_KEY -P $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
 
+          TARBALL=deploy-artifacts/greenspace-backend-${GITHUB_SHA:0:8}.tar.gz
+          
           echo "::group::Uploading backend bundle"
           scp $SSH_OPTS "$TARBALL" "$SSH_USER@$SSH_HOST:/tmp/greenspace-backend.tar.gz"
           echo "::endgroup::"
@@ -253,7 +255,7 @@ jobs:
           SSH_HOST: ${{ secrets.CPANEL_SSH_HOST || 'asociatiagreenspace.ro' }}
           SSH_PORT: ${{ secrets.CPANEL_SSH_PORT || '22' }}
           FE_PATH: ${{ secrets.CPANEL_FE_PATH || '/home/asocia17/asociatiagreenspace.ro/public_html' }}
-          SSH_KEY: ${{ runner.home }}/.ssh/id_deploy
+          SSH_KEY: $HOME/.ssh/id_deploy
         run: |
           set -e
           SSH_OPTS="-i $SSH_KEY -p $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
