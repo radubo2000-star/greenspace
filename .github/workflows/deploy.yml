@@ -202,23 +202,66 @@ jobs:
           SSH_HOST: ${{ secrets.CPANEL_SSH_HOST || 'asociatiagreenspace.ro' }}
           SSH_PORT: ${{ secrets.CPANEL_SSH_PORT || '22' }}
           BE_PATH: ${{ secrets.CPANEL_BE_PATH || '/home/asocia17/api-gs' }}
-          SSH_KEY: $HOME/.ssh/id_deploy
+          
         run: |
           set -e
-          SSH_OPTS="-i $SSH_KEY -p $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
-          SCP_OPTS="-i $SSH_KEY -P $SSH_PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
 
-          TARBALL=deploy-artifacts/greenspace-backend-${GITHUB_SHA:0:8}.tar.gz
-          
-          echo "::group::Uploading backend bundle"
-          scp $SSH_OPTS "$TARBALL" "$SSH_USER@$SSH_HOST:/tmp/greenspace-backend.tar.gz"
-          echo "::endgroup::"
+          SSH_KEY: $HOME/.ssh/id_deploy
+          TARBALL="deploy-artifacts/greenspace-backend-${GITHUB_SHA:0:8}.tar.gz"
 
-          echo "::group::Extracting backend on server"
-          ssh $SSH_OPTS "$SSH_USER@$SSH_HOST" "bash -s -- \"$BE_PATH\"" <<'REMOTE_EOF'
-          set -e
-          cd "${1:-/home/asocia17/api-gs}"
-          echo "→ Backup existing backend..."
+          echo "SSH key: $SSH_KEY"
+          echo "SSH host: $SSH_HOST"
+          echo "SSH user: $SSH_USER"
+          echo "SSH port: $SSH_PORT"
+          echo "Bundle: $TARBALL"
+    
+          if [ ! -f "$SSH_KEY" ]; then
+            echo "::error::SSH key does not exist at $SSH_KEY"
+            exit 1
+          fi
+
+          if [ ! -f "$TARBALL" ]; then
+            echo "::error::Backend bundle does not exist: $TARBALL"
+            exit 1
+          fi
+      
+          echo "::group::Testing SSH connection"
+          ssh \
+              -i "$SSH_KEY" \
+              -p "$SSH_PORT" \
+              -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              "$SSH_USER@$SSH_HOST" \
+              "echo 'SSH connection successful'"
+        
+            echo "::endgroup::"
+        
+            echo "::group::Uploading backend bundle"
+            scp \
+              -i "$SSH_KEY" \
+              -P "$SSH_PORT" \
+              -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              "$TARBALL" \
+              "$SSH_USER@$SSH_HOST:/tmp/greenspace-backend.tar.gz"
+        
+            echo "::endgroup::"
+        
+            echo "::group::Extracting backend on server"
+            ssh \
+              -i "$SSH_KEY" \
+              -p "$SSH_PORT" \
+              -o StrictHostKeyChecking=accept-new \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              "$SSH_USER@$SSH_HOST" \
+              "bash -s -- \"$BE_PATH\"" <<'REMOTE_EOF'
+        
+            set -e
+        
+            cd "${1:-/home/asocia17/api-gs}"
+        
+            echo "→ Backup existing backend..."
+
           tar -czf backup-$(date +%Y%m%d-%H%M%S)).tar.gz --exclude='node_modules' --exclude='node_modules/*' --exclude='data' --exclude='data/*' --exclude='logs' --exclude='logs/*' --exclude='tmp' --exclude='tmp/*' --exclude='deploy' --exclude='deploy/*' --exclude='.env' --exclude='.htaccess' . 2>/dev/null || true
           echo "→ Extracting new version..."
           tar -xzf /tmp/greenspace-backend.tar.gz
