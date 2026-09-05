@@ -177,7 +177,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           if [ -z "${{ secrets.CPANEL_SSH_KEY }}" ]; then
-            echo "::error::CPANEL_SSH_KEY secret is not set. Add it in Settings -> Secrets -> Actions to enable automatic deployment."
+            echo $"::error::CPANEL_SSH_KEY {{ secrets.CPANEL_SSH_KEY }} secret is not set. Add it in Settings -> Secrets -> Actions to enable automatic deployment."
             exit 1
           fi
           cat > ~/.ssh/id_deploy <<'KEY_EOF'
