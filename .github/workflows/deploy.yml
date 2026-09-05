@@ -174,16 +174,17 @@ jobs:
       # ============================================
       - name: Install SSH key
         shell: bash
+        env:
+          CPANEL_SSH_KEY: "${{ secrets.CPANEL_SSH_KEY }}"
         run: |
           mkdir -p ~/.ssh
-          if [ -z "${{ secrets.CPANEL_SSH_KEY }}" ]; then
+          if [ -z "$CPANEL_SSH_KEY" ]; then
             echo "::error::CPANEL_SSH_KEY secret is not set. Add it in Settings -> Secrets -> Actions to enable automatic deployment."
-            echo ${{ secrets.CPANEL_SSH_KEY }}
             exit 1
           fi
-          cat > ~/.ssh/id_deploy <<'KEY_EOF'
-          ${{ secrets.CPANEL_SSH_KEY }}
-          KEY_EOF
+          
+          printf '%s\n' "$CPANEL_SSH_KEY" > ~/.ssh/id_deploy
+          
           chmod 700 ~/.ssh
           chmod 600 ~/.ssh/id_deploy
 
