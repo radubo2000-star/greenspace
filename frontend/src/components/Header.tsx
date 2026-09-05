@@ -51,6 +51,7 @@ const Header = () => {
     { name: 'Galerie', href: '/galerie', type: 'link' },
     { name: 'Raport Activitate', href: '/raport-activitate', type: 'link' },
     { name: 'Implică-te', href: '/implica-te', type: 'link' },
+    { name: 'Echipa', href: '/echipa', type: 'link' },
     { name: 'Contact', href: '/contact', type: 'link' },
   ]
 
