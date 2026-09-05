@@ -14,6 +14,7 @@ import HomePage from './pages/HomePage'
 
 // Lazy load all other pages for code splitting
 const AboutPage = lazy(() => import('./pages/AboutPage'))
+const TeamPage = lazy(() => import('./pages/TeamPage'))
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'))
 const ExperiencesPage = lazy(() => import('./pages/ExperiencesPage'))
 const MediuConservarePage = lazy(() => import('./pages/MediuConservarePage'))
@@ -33,6 +34,7 @@ const FileManagerPage = lazy(() => import('./pages/FileManagerPage'))
 const ImageUploadAdminPage = lazy(() => import('./pages/ImageUploadAdminPage'))
 const StatisticsAdminPage = lazy(() => import('./pages/admin/StatisticsAdminPage'))
 const TestimonialsAdminPage = lazy(() => import('./pages/admin/TestimonialsAdminPage'))
+const TeamAdminPage = lazy(() => import('./pages/admin/TeamAdminPage'))
 const StatisticsPage = lazy(() => import('./pages/StatisticsPage'))
 const PageViewAnalyticsPage = lazy(() => import('./pages/PageViewAnalyticsPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -59,6 +61,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/despre" element={<AboutPage />} />
+          <Route path="/echipa" element={<TeamPage />} />
           <Route path="/proiecte" element={<ProjectsPage />} />
           <Route path="/experiente" element={<ExperiencesPage />} />
           <Route path="/initiative/mediu-si-conservare" element={<MediuConservarePage />} />
@@ -141,6 +144,14 @@ function AppContent() {
                 <TestimonialsAdminPage />
               </ProtectedRoute>
             } 
+          />
+          <Route
+            path="/admin/team"
+            element={
+              <ProtectedRoute>
+                <TeamAdminPage />
+              </ProtectedRoute>
+            }
           />
           <Route 
             path="/admin/analytics/page-views" 

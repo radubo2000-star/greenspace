@@ -8,7 +8,8 @@ import {
   Upload,
   ArrowLeft,
   FileText,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Users
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -41,6 +42,14 @@ const AdminDashboardPage = () => {
       link: '/admin/testimonials',
       gradient: 'from-violet-500 via-purple-600 to-indigo-600',
       iconGradient: 'from-violet-400 to-indigo-500'
+    },
+    {
+      title: 'Echipă',
+      description: 'Gestionează membrii echipei de pe pagina „Echipa”',
+      icon: Users,
+      link: '/admin/team',
+      gradient: 'from-teal-500 via-cyan-600 to-emerald-600',
+      iconGradient: 'from-teal-400 to-emerald-500'
     },
     {
       title: 'Statistici Site',
