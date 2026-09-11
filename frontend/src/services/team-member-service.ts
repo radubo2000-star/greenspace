@@ -1,30 +1,42 @@
-import { database } from '@/lib/firebase/config';
-import { ref, get, set, push, remove, update } from 'firebase/database';
+import { getBackendUrl } from '@/lib/backend-config';
+import { getAuthHeaders } from '@/lib/auth-headers';
 import type { TeamMember, TeamMemberFormData } from '@/types/team-member';
 
-const TEAM_PATH = 'team';
+/**
+ * JSON request helper for authenticated backend calls.
+ * Admin team routes are already protected by Bearer-token auth (no CSRF needed).
+ */
+async function authenticatedRequest<T>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const authHeaders = await getAuthHeaders();
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders,
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'A apărut o eroare.');
+  }
+
+  return data as T;
+}
 
 export const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
-    const teamRef = ref(database, TEAM_PATH);
-    const snapshot = await get(teamRef);
-
-    if (!snapshot.exists()) {
-      return [];
-    }
-
-    const data = snapshot.val();
-    const members = Object.entries(data).map(([id, member]) => ({
-      id,
-      ...(member as Omit<TeamMember, 'id'>),
-    }));
-
-    return members.sort((a, b) => {
-      if (a.order !== b.order) {
-        return a.order - b.order;
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
+    const backendUrl = getBackendUrl();
+    const data = await authenticatedRequest<{ success: boolean; team: TeamMember[] }>(
+      `${backendUrl}/admin/team`,
+      { method: 'GET' },
+    );
+    return data.team || [];
   } catch (error) {
     console.error('❌ Error fetching team members:', error);
     throw error;
@@ -32,24 +44,34 @@ export const getTeamMembers = async (): Promise<TeamMember[]> => {
 };
 
 export const getActiveTeamMembers = async (): Promise<TeamMember[]> => {
-  const allMembers = await getTeamMembers();
-  return allMembers.filter(member => member.isActive);
+  try {
+    const backendUrl = getBackendUrl();
+    const response = await fetch(`${backendUrl}/team`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'A apărut o eroare.');
+    }
+
+    return data.team || [];
+  } catch (error) {
+    console.error('❌ Error fetching active team members:', error);
+    throw error;
+  }
 };
 
 export const getTeamMemberById = async (id: string): Promise<TeamMember | null> => {
   try {
-    const memberRef = ref(database, `${TEAM_PATH}/${id}`);
-    const snapshot = await get(memberRef);
-
-    if (!snapshot.exists()) {
+    const backendUrl = getBackendUrl();
+    const data = await authenticatedRequest<{ success: boolean; team: TeamMember }>(
+      `${backendUrl}/admin/team/${id}`,
+      { method: 'GET' },
+    );
+    return data.team || null;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('găsit')) {
       return null;
     }
-
-    return {
-      id,
-      ...snapshot.val(),
-    } as TeamMember;
-  } catch (error) {
     console.error('❌ Error fetching team member:', error);
     throw error;
   }
@@ -57,18 +79,17 @@ export const getTeamMemberById = async (id: string): Promise<TeamMember | null> 
 
 export const addTeamMember = async (data: TeamMemberFormData): Promise<string> => {
   try {
-    const teamRef = ref(database, TEAM_PATH);
-    const newMemberRef = push(teamRef);
+    const backendUrl = getBackendUrl();
+    const result = await authenticatedRequest<{ success: boolean; id: string }>(
+      `${backendUrl}/admin/team`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    );
 
-    const member: Omit<TeamMember, 'id'> = {
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-
-    await set(newMemberRef, member);
-
-    console.log('✅ Team member added successfully:', newMemberRef.key);
-    return newMemberRef.key!;
+    console.log('✅ Team member added successfully:', result.id);
+    return result.id;
   } catch (error) {
     console.error('❌ Error adding team member:', error);
     throw error;
@@ -77,31 +98,17 @@ export const addTeamMember = async (data: TeamMemberFormData): Promise<string> =
 
 export const updateTeamMember = async (
   id: string,
-  data: Partial<TeamMemberFormData>
+  data: Partial<TeamMemberFormData>,
 ): Promise<void> => {
   try {
-    const memberRef = ref(database, `${TEAM_PATH}/${id}`);
-
-    const snapshot = await get(memberRef);
-    if (!snapshot.exists()) {
-      throw new Error('Team member not found');
-    }
-
-    const existingData = snapshot.val();
-
-    const updatedData = {
-      ...existingData,
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-
-    Object.keys(updatedData).forEach(key => {
-      if (updatedData[key] === undefined) {
-        delete updatedData[key];
-      }
-    });
-
-    await set(memberRef, updatedData);
+    const backendUrl = getBackendUrl();
+    await authenticatedRequest(
+      `${backendUrl}/admin/team/${id}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      },
+    );
 
     console.log('✅ Team member updated successfully:', id);
   } catch (error) {
@@ -112,8 +119,11 @@ export const updateTeamMember = async (
 
 export const deleteTeamMember = async (id: string): Promise<void> => {
   try {
-    const memberRef = ref(database, `${TEAM_PATH}/${id}`);
-    await remove(memberRef);
+    const backendUrl = getBackendUrl();
+    await authenticatedRequest(
+      `${backendUrl}/admin/team/${id}`,
+      { method: 'DELETE' },
+    );
 
     console.log('✅ Team member deleted successfully:', id);
   } catch (error) {
@@ -142,15 +152,9 @@ export const toggleTeamMemberStatus = async (id: string): Promise<void> => {
 
 export const reorderTeamMembers = async (memberIds: string[]): Promise<void> => {
   try {
-    const updates: Record<string, any> = {};
-
-    memberIds.forEach((id, index) => {
-      updates[`${TEAM_PATH}/${id}/order`] = index;
-    });
-
-    const dbRef = ref(database);
-    await update(dbRef, updates);
-
+    await Promise.all(memberIds.map(async (id, index) => {
+      await updateTeamMember(id, { order: index });
+    }));
     console.log('✅ Team members reordered successfully');
   } catch (error) {
     console.error('❌ Error reordering team members:', error);

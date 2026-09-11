@@ -30,6 +30,7 @@ export default function TeamAdminPage() {
     role: '',
     email: '',
     image: '',
+    description: '',
     order: 0,
     isActive: true,
   });
@@ -57,6 +58,7 @@ export default function TeamAdminPage() {
       role: '',
       email: '',
       image: '',
+      description: '',
       order: 0,
       isActive: true,
     });
@@ -71,6 +73,7 @@ export default function TeamAdminPage() {
         role: member.role || '',
         email: member.email || '',
         image: member.image || '',
+        description: member.description || '',
         order: member.order,
         isActive: member.isActive,
       });
@@ -224,6 +227,7 @@ export default function TeamAdminPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold">Membru</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Rol</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Descriere</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Acțiuni</th>
                 </tr>
@@ -231,13 +235,13 @@ export default function TeamAdminPage() {
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       Se încarcă...
                     </td>
                   </tr>
                 ) : members.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                       Nu există membri. Adaugă primul membru al echipei!
                     </td>
                   </tr>
@@ -277,6 +281,11 @@ export default function TeamAdminPage() {
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
                         )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-600 line-clamp-2 max-w-xs" title={member.description}>
+                          {member.description || '-'}
+                        </p>
                       </td>
                       <td className="px-6 py-4">
                         {member.isActive ? (
@@ -382,6 +391,22 @@ export default function TeamAdminPage() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="Ex: contact@asociatiagreenspace.ro"
                     />
+                  </div>
+
+                  {/* Description (optional) */}
+                  <div>
+                    <Label htmlFor="description">Descriere (opțional)</Label>
+                    <textarea
+                      id="description"
+                      value={formData.description || ''}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="O scurtă prezentare a membrului..."
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formData.description?.length || 0} / 5000 caractere
+                    </p>
                   </div>
 
                   {/* Image */}
