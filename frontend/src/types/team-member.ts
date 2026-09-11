@@ -4,6 +4,7 @@ export interface TeamMember {
   role: string;
   email: string;
   image: string;
+  description?: string;
   order: number;
   isActive: boolean;
   createdAt: string;

@@ -189,6 +189,11 @@ if (config.isProduction()) {
     console.log('   POST   ' + baseUrl + prefix + '/member');
     console.log('   POST   ' + baseUrl + prefix + '/partnership');
     console.log('   POST   ' + baseUrl + prefix + '/donation');
+    console.log('   GET    ' + baseUrl + prefix + '/team');
+    console.log('   GET    ' + baseUrl + prefix + '/admin/team');
+    console.log('   POST   ' + baseUrl + prefix + '/admin/team');
+    console.log('   PUT    ' + baseUrl + prefix + '/admin/team/:id');
+    console.log('   DELETE ' + baseUrl + prefix + '/admin/team/:id');
     console.log('   GET    ' + baseUrl + prefix + '/admin/data');
     console.log('   GET    ' + baseUrl + prefix + '/admin/statistics');
     console.log('   POST   ' + baseUrl + prefix + '/analytics/page-view');

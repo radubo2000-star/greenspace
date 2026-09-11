@@ -19,6 +19,7 @@ const dataFolders = [
   path.join(dataFolder, 'members'),
   path.join(dataFolder, 'partnerships'),
   path.join(dataFolder, 'contacts'),
+  path.join(dataFolder, 'team'),
   path.join(dataFolder, 'analytics'),
   path.join(dataFolder, 'analytics', 'page-views'),
   path.join(dataFolder, 'uploads'),

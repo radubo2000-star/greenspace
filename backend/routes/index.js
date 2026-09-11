@@ -10,6 +10,7 @@ const formRoutes = require('./forms');
 const adminRoutes = require('./admin');
 const analyticsRoutes = require('./analytics');
 const filesRoutes = require('./files');
+const teamRoutes = require('./team');
 
 // Import middleware
 const adminAuth = require('../middleware/adminAuth');
@@ -30,6 +31,7 @@ router.use('/', cacheHeaders(60), healthRoutes);
 router.use('/analytics', cacheHeaders(120), analyticsRoutes);
 router.use('/admin', noCache, adminAuth, adminRoutes);
 router.use('/files', adminAuth, filesRoutes);
+router.use('/', teamRoutes);
 router.use('/', uploadRoutes);
 
 // CSRF token endpoint — must be before CSRF protection middleware

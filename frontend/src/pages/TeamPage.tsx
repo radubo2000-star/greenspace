@@ -180,6 +180,11 @@ const TeamPage = () => {
                               {member.email}
                             </a>
                           )}
+                          {member.description && (
+                            <p className="mt-4 text-gray-600 text-sm leading-relaxed">
+                              {member.description}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </motion.div>
