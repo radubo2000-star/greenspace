@@ -1,45 +1,59 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { getBackendUrl } from '../lib/backend-config';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { UserPlus, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { KeyRound, Lock, ArrowLeft } from 'lucide-react';
 
-export default function SignupPage() {
-  const [email, setEmail] = useState('');
+export default function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Validare parolă
-    if (password !== confirmPassword) {
-      setError('Parolele nu se potrivesc');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Parola trebuie să aibă cel puțin 6 caractere');
-      return;
-    }
-
+    setMessage('');
     setLoading(true);
 
     try {
-      await signup(email, password);
-      navigate('/admin');
+      if (!token) {
+        throw new Error('Linkul de resetare este invalid sau a expirat');
+      }
+      if (password !== confirmPassword) {
+        throw new Error('Parolele nu se potrivesc');
+      }
+      if (password.length < 6) {
+        throw new Error('Parola trebuie să aibă cel puțin 6 caractere');
+      }
+
+      const response = await fetch(`${getBackendUrl()}/auth/reset-password`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'A apărut o eroare. Vă rugăm încercați din nou');
+      }
+
+      setMessage('Parola a fost resetată. Vă puteți autentifica cu noua parolă.');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      console.error('Signup error:', err);
       setError(err instanceof Error ? err.message : 'A apărut o eroare. Vă rugăm încercați din nou');
+    } finally {
       setLoading(false);
     }
   };
@@ -50,12 +64,12 @@ export default function SignupPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <div className="p-3 bg-primary/10 rounded-full">
-              <UserPlus className="h-8 w-8 text-primary" />
+              <KeyRound className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Creare Cont Admin</CardTitle>
+          <CardTitle className="text-2xl text-center">Resetează Parola</CardTitle>
           <CardDescription className="text-center">
-            Creați un cont nou pentru a accesa panoul de administrare
+            Introduceți noua parolă pentru contul dvs.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,26 +79,15 @@ export default function SignupPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10"
-                  disabled={loading}
-                />
-              </div>
-            </div>
+
+            {message && (
+              <Alert variant="default">
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
 
             <div className="space-y-2">
-              <Label htmlFor="password">Parolă</Label>
+              <Label htmlFor="password">Noua Parolă</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -99,9 +102,6 @@ export default function SignupPage() {
                   minLength={6}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Minim 6 caractere
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -122,24 +122,20 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                  Se creează contul...
+                  Se resetează parola...
                 </>
               ) : (
-                'Creare Cont'
+                'Resetează parola'
               )}
             </Button>
 
             <div className="text-center pt-4 border-t">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />

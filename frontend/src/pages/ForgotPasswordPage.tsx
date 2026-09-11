@@ -1,45 +1,44 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { getBackendUrl } from '../lib/backend-config';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { UserPlus, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
-export default function SignupPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Validare parolă
-    if (password !== confirmPassword) {
-      setError('Parolele nu se potrivesc');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Parola trebuie să aibă cel puțin 6 caractere');
-      return;
-    }
-
+    setMessage('');
     setLoading(true);
 
     try {
-      await signup(email, password);
-      navigate('/admin');
+      const response = await fetch(`${getBackendUrl()}/auth/forgot-password`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'A apărut o eroare. Vă rugăm încercați din nou');
+      }
+
+      setMessage('Dacă adresa de email există în sistem, vei primi un link de resetare a parolei.');
     } catch (err) {
-      console.error('Signup error:', err);
       setError(err instanceof Error ? err.message : 'A apărut o eroare. Vă rugăm încercați din nou');
+    } finally {
       setLoading(false);
     }
   };
@@ -50,12 +49,12 @@ export default function SignupPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <div className="p-3 bg-primary/10 rounded-full">
-              <UserPlus className="h-8 w-8 text-primary" />
+              <Mail className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Creare Cont Admin</CardTitle>
+          <CardTitle className="text-2xl text-center">Resetare Parolă</CardTitle>
           <CardDescription className="text-center">
-            Creați un cont nou pentru a accesa panoul de administrare
+            Introduceți adresa de email iar noi vă trimitem un link de resetare
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,7 +64,14 @@ export default function SignupPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
+            {message && (
+              <Alert variant="default">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -83,63 +89,20 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Parolă</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10"
-                  disabled={loading}
-                  minLength={6}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Minim 6 caractere
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmă Parola</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="pl-10"
-                  disabled={loading}
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                  Se creează contul...
+                  Se trimite linkul...
                 </>
               ) : (
-                'Creare Cont'
+                'Trimite linkul de resetare'
               )}
             </Button>
 
             <div className="text-center pt-4 border-t">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />

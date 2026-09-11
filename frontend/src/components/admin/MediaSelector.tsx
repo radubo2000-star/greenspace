@@ -48,7 +48,7 @@ const MediaSelector = ({
       const backendUrl = getBackendUrl()
       const headers = await getAuthHeaders()
 
-      const response = await fetch(`${backendUrl}/files/list?path=uploads`, { headers, signal })
+      const response = await fetch(`${backendUrl}/files/list?path=uploads`, { headers, credentials: 'include', signal })
       if (!response.ok) {
         throw new Error('Failed to fetch files')
       }

@@ -139,6 +139,11 @@ jobs:
           EMAIL_FROM=${{ secrets.EMAIL_FROM || 'noreply@asociatiagreenspace.ro' }}
           FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }}
           FIREBASE_SERVICE_ACCOUNT=${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MYSQL_HOST=${{ secrets.MYSQL_HOST || 'localhost' }}
+          MYSQL_PORT=${{ secrets.MYSQL_PORT || '3306' }}
+          MYSQL_USER=${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
           ENV_EOF
 
       - name: Package backend

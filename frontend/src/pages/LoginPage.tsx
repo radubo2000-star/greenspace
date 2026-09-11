@@ -116,11 +116,17 @@ export default function LoginPage() {
               )}
             </Button>
 
-            <div className="text-center pt-4 border-t">
+            <div className="text-center pt-4 border-t space-y-2">
               <p className="text-sm text-muted-foreground">
                 Nu aveți cont?{' '}
                 <Link to="/signup" className="text-primary hover:underline font-medium">
                   Creați un cont nou
+                </Link>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Ați uitat parola?{' '}
+                <Link to="/forgot-password" className="text-primary hover:underline font-medium">
+                  Resetați parola
                 </Link>
               </p>
             </div>

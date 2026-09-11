@@ -124,7 +124,7 @@ const StatisticsPage = () => {
 
       const backendUrl = getBackendUrl();
       const headers = await getAuthHeaders();
-      const response = await fetch(`${backendUrl}/admin/statistics`, { headers, signal });
+      const response = await fetch(`${backendUrl}/admin/statistics`, { headers, credentials: 'include', signal });
 
       if (!response.ok) {
         throw new Error('Failed to fetch statistics');
@@ -266,6 +266,7 @@ const StatisticsPage = () => {
                       const headers = await getAuthHeaders();
                       const response = await fetch(`${backendUrl}/analytics/page-views`, {
                         method: 'DELETE',
+                        credentials: 'include',
                         headers,
                       });
                       if (!response.ok) throw new Error('Failed to reset');

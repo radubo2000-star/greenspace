@@ -1,17 +1,11 @@
-import { auth } from '@/lib/firebase/config';
-
 /**
- * Returns an object with the Authorization header containing the current
- * user's Firebase ID token. Use this for requests to protected backend
- * routes (/admin/*, /files/*).
+ * Session-cookie based auth: protected backend routes (/admin/*, /files/*)
+ * read the MySQL session cookie automatically; no Authorization header
+ * is needed anymore. Kept for call-site compatibility (always empty).
  *
- * Returns an empty object when no user is signed in so callers can safely
- * spread it into a headers object without conditional checks.
+ * Relies on fetch(options) including `credentials: 'include'` so the
+ * cookie is sent with each request.
  */
 export async function getAuthHeaders(): Promise<Record<string, string>> {
-  const user = auth.currentUser;
-  if (!user) return {};
-
-  const token = await user.getIdToken();
-  return { Authorization: `Bearer ${token}` };
+  return {};
 }

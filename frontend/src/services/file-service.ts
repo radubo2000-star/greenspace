@@ -4,7 +4,7 @@ import { getAuthHeaders } from '@/lib/auth-headers';
 export const getFiles = async (path: string = '', signal?: AbortSignal) => {
   const backendUrl = getBackendUrl();
   const headers = await getAuthHeaders();
-  const response = await fetch(`${backendUrl}/files?path=${encodeURIComponent(path)}`, { headers, signal });
+  const response = await fetch(`${backendUrl}/files?path=${encodeURIComponent(path)}`, { headers, credentials: 'include', signal });
   
   if (!response.ok) {
     const error = await response.json();
@@ -17,7 +17,7 @@ export const getFiles = async (path: string = '', signal?: AbortSignal) => {
 export const downloadFile = async (path: string) => {
   const backendUrl = getBackendUrl();
   const headers = await getAuthHeaders();
-  const response = await fetch(`${backendUrl}/files/download?path=${encodeURIComponent(path)}`, { headers });
+  const response = await fetch(`${backendUrl}/files/download?path=${encodeURIComponent(path)}`, { headers, credentials: 'include' });
   
   if (!response.ok) {
     const error = await response.json();
@@ -53,6 +53,7 @@ export const deleteFile = async (path: string) => {
   const response = await fetch(`${backendUrl}/files?path=${encodeURIComponent(path)}`, {
     method: 'DELETE',
     headers,
+    credentials: 'include',
   });
   
   if (!response.ok) {

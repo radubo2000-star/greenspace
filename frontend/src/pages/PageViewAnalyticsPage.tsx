@@ -155,6 +155,7 @@ const PageViewAnalyticsPage = () => {
                       const headers = await getAuthHeaders();
                       const response = await fetch(`${backendUrl}/analytics/page-views`, {
                         method: 'DELETE',
+                        credentials: 'include',
                         headers,
                       });
                       if (!response.ok) throw new Error('Failed to reset');

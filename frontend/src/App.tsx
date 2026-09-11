@@ -39,6 +39,9 @@ const StatisticsPage = lazy(() => import('./pages/StatisticsPage'))
 const PageViewAnalyticsPage = lazy(() => import('./pages/PageViewAnalyticsPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignupPage = lazy(() => import('./pages/SignupPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const CookiePolicyPage = lazy(() => import('./pages/CookiePolicyPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
@@ -73,6 +76,9 @@ function AppContent() {
           <Route path="/galerie" element={<GalleryPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route 
             path="/galerie/admin" 
             element={
