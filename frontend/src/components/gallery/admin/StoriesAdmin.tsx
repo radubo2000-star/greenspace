@@ -14,7 +14,7 @@ import { getImagePreview } from '@/lib/image-preview-helper'
 import { getThumbnailUrlFromVideoUrl, isLocalVideoUrl } from '@/lib/video-thumbnail-generator'
 import { getYouTubeThumbnail, isYouTubeUrl } from '@/lib/youtube-helpers'
 
-const StoriesAdminFirebase = () => {
+const StoriesAdmin = () => {
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,7 +31,7 @@ const StoriesAdminFirebase = () => {
   })
   const [saving, setSaving] = useState(false)
 
-  // Subscribe to stories from Firebase
+  // Subscribe to stories from the backend (MySQL)
   useEffect(() => {
     const unsubscribe = subscribeToStories((data) => {
       setStories(data)
@@ -488,4 +488,4 @@ const StoriesAdminFirebase = () => {
   )
 }
 
-export default StoriesAdminFirebase
+export default StoriesAdmin

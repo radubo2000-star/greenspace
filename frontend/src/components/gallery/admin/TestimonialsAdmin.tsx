@@ -13,7 +13,7 @@ import { getImagePreview } from '@/lib/image-preview-helper'
 import { getYouTubeEmbedUrl, getYouTubeThumbnail, isYouTubeUrl } from '@/lib/youtube-helpers'
 import { getThumbnailUrlFromVideoUrl, isLocalVideoUrl } from '@/lib/video-thumbnail-generator'
 
-const TestimonialsAdminFirebase = () => {
+const TestimonialsAdmin = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -449,4 +449,4 @@ const TestimonialsAdminFirebase = () => {
   )
 }
 
-export default TestimonialsAdminFirebase
+export default TestimonialsAdmin

@@ -12,6 +12,9 @@ const analyticsRoutes = require('./analytics');
 const filesRoutes = require('./files');
 const teamRoutes = require('./team');
 const authRoutes = require('./auth');
+const galleryRoutes = require('./gallery');
+const statisticsRoutes = require('./statistics');
+const testimonialsRoutes = require('./testimonials');
 
 // Import middleware
 const adminAuth = require('../middleware/adminAuth');
@@ -27,14 +30,19 @@ router.use(sanitizeBody);
 // Routes that do NOT need CSRF protection:
 // - Health/analytics: public, read-heavy
 // - Auth: session-cookie based (same-site cookie; CSRF handled via SameSite+Origin)
+// - Gallery/statistics/testimonials: public GET + metrics; admin CRUD is
+//   protected by adminAuth inside the module (session cookie)
 // - Admin/files: already protected by adminAuth middleware (session cookie)
 // - Uploads: already protected by adminAuth middleware (session cookie|
 router.use('/', cacheHeaders(60), healthRoutes);
 router.use('/auth', cacheHeaders(0), authRoutes);
 router.use('/analytics', cacheHeaders(120), analyticsRoutes);
+router.use('/', teamRoutes);
+router.use('/gallery', galleryRoutes);
+router.use('/statistics', statisticsRoutes);
+router.use('/testimonials', testimonialsRoutes);
 router.use('/admin', noCache, adminAuth, adminRoutes);
 router.use('/files', adminAuth, filesRoutes);
-router.use('/', teamRoutes);
 router.use('/', uploadRoutes);
 
 // CSRF token endpoint — must be before CSRF protection middleware

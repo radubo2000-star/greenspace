@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Radio, Calendar, MapPin, Users, Clock, Play, X, MessageCircle, Heart, Share2, Loader2 } from 'lucide-react'
-import { useLiveStreamViewers } from '@/hooks/use-firebase-metrics'
-import { subscribeToLiveStreams, type LiveStream as FirebaseLiveStream } from '@/services/gallery-service'
+import { useLiveStreamViewers } from '@/hooks/use-gallery-metrics'
+import { subscribeToLiveStreams, type LiveStream as BackendLiveStream } from '@/services/gallery-service'
 import { getImagePreview, getVideoPreview } from '@/lib/image-preview-helper'
 import { getYouTubeEmbedUrl } from '@/lib/youtube-helpers'
 
@@ -24,13 +24,13 @@ interface LiveStream {
 const LiveStreams = () => {
   const [selectedStream, setSelectedStream] = useState<LiveStream | null>(null)
   const [activeTab, setActiveTab] = useState<'live' | 'upcoming' | 'past'>('live')
-  const [firebaseStreams, setFirebaseStreams] = useState<FirebaseLiveStream[]>([])
+  const [backendStreams, setBackendStreams] = useState<BackendLiveStream[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Subscribe to Firebase live streams
+  // Subscribe to backend live streams (MySQL)
   useEffect(() => {
     const unsubscribe = subscribeToLiveStreams((streams) => {
-      setFirebaseStreams(streams)
+      setBackendStreams(streams)
       setLoading(false)
     })
 
@@ -118,8 +118,8 @@ const LiveStreams = () => {
     }
   ]
 
-  // Convert Firebase streams to display format
-  const convertFirebaseToStream = (fb: FirebaseLiveStream): LiveStream => {
+  // Convert backend streams to display format
+  const convertBackendToStream = (fb: BackendLiveStream): LiveStream => {
     // Determine status based on isLive and scheduledTime
     let status: 'live' | 'upcoming' | 'ended' = 'upcoming'
     
@@ -167,9 +167,9 @@ const LiveStreams = () => {
     }
   }
 
-  // Use Firebase streams if available, otherwise use fallback
-  const allStreams = firebaseStreams.length > 0
-    ? firebaseStreams.map(convertFirebaseToStream)
+  // Use backend streams if available, otherwise use fallback
+  const allStreams = backendStreams.length > 0
+    ? backendStreams.map(convertBackendToStream)
     : fallbackStreams
 
   const filteredStreams = allStreams.filter(stream => {
@@ -179,7 +179,7 @@ const LiveStreams = () => {
     return true
   })
 
-  // Component pentru fiecare stream cu Firebase
+  // Component pentru fiecare stream
   const StreamCard = ({ stream, index }: { stream: LiveStream; index: number }) => {
     const { viewers, join, leave: _leave } = useLiveStreamViewers(stream.id)
 
@@ -225,7 +225,7 @@ const LiveStreams = () => {
             </div>
           )}
 
-          {/* Viewers/Duration Badge - Firebase Real-time */}
+          {/* Viewers/Duration Badge */}
           {stream.status === 'live' && (
             <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -425,7 +425,7 @@ const LiveStreams = () => {
   )
 }
 
-// Modal component cu Firebase
+// Modal component
 const StreamModal = ({ stream, onClose }: { stream: LiveStream; onClose: () => void }) => {
   const { viewers } = useLiveStreamViewers(stream.id)
 

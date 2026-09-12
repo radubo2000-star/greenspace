@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Calendar, Leaf, Loader2, Eye } from 'lucide-react'
 import { subscribeToBeforeAfterProjects, type BeforeAfterProject } from '@/services/gallery-service'
-import { useBeforeAfterViews } from '@/hooks/use-firebase-metrics'
+import { useBeforeAfterViews } from '@/hooks/use-gallery-metrics'
 import { getImagePreview } from '@/lib/image-preview-helper'
 
 interface BeforeAfter {
@@ -171,13 +171,13 @@ const ProjectCard = ({ project, index }: { project: BeforeAfter; index: number }
 }
 
 const BeforeAfterSlider = () => {
-  const [firebaseProjects, setFirebaseProjects] = useState<BeforeAfterProject[]>([])
+  const [backendProjects, setBackendProjects] = useState<BeforeAfterProject[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Subscribe to Firebase before/after
+  // Subscribe to backend before/after projects
   useEffect(() => {
     const unsubscribe = subscribeToBeforeAfterProjects((projects) => {
-      setFirebaseProjects(projects)
+      setBackendProjects(projects)
       setLoading(false)
     })
 
@@ -272,8 +272,8 @@ const BeforeAfterSlider = () => {
     }
   ]
 
-  // Convert Firebase projects to display format
-  const convertFirebaseToProject = (fb: BeforeAfterProject): BeforeAfter => ({
+  // Convert backend projects to display format
+  const convertBackendToProject = (fb: BeforeAfterProject): BeforeAfter => ({
     id: fb.id,
     title: fb.title,
     location: fb.location,
@@ -289,9 +289,9 @@ const BeforeAfterSlider = () => {
     }
   })
 
-  // Use Firebase projects if available, otherwise use fallback
-  const displayProjects = firebaseProjects.length > 0
-    ? firebaseProjects.map(convertFirebaseToProject)
+  // Use backend projects if available, otherwise use fallback
+  const displayProjects = backendProjects.length > 0
+    ? backendProjects.map(convertBackendToProject)
     : fallbackProjects
 
   // Loading state

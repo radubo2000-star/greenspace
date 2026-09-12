@@ -14,7 +14,7 @@ import { getImagePreview } from '@/lib/image-preview-helper'
 import { getYouTubeEmbedUrl, getYouTubeThumbnail, isYouTubeUrl } from '@/lib/youtube-helpers'
 import { getThumbnailUrlFromVideoUrl, isLocalVideoUrl } from '@/lib/video-thumbnail-generator'
 
-const LiveStreamsAdminFirebase = () => {
+const LiveStreamsAdmin = () => {
   const [streams, setStreams] = useState<LiveStream[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -420,4 +420,4 @@ const LiveStreamsAdminFirebase = () => {
   )
 }
 
-export default LiveStreamsAdminFirebase
+export default LiveStreamsAdmin

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX, Loader2, Eye } from 'lucide-react'
 import { subscribeToStories, type Story } from '@/services/gallery-service'
-import { useStoryViews } from '@/hooks/use-firebase-metrics'
+import { useStoryViews } from '@/hooks/use-gallery-metrics'
 import { getImagePreview, getVideoPreview } from '@/lib/image-preview-helper'
 import { getYouTubeEmbedUrl, isYouTubeUrl } from '@/lib/youtube-helpers'
 
@@ -30,7 +30,7 @@ const StoryViewsIncrementer = ({ storyId }: { storyId: string }) => {
   return null
 }
 
-// Component for Story Card with Firebase views
+// Component for Story Card with live views
 const StoryCard = ({ story, index, onClick }: { story: Story; index: number; onClick: () => void }) => {
   const { views } = useStoryViews(story.id)
 
@@ -78,7 +78,7 @@ const StoryCard = ({ story, index, onClick }: { story: Story; index: number; onC
         <div className="absolute inset-0 rounded-2xl ring-2 ring-primary-500 ring-offset-2 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      {/* Views Badge with Firebase */}
+      {/* Views Badge */}
       <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
         <Eye className="w-3 h-3" />
         <span>{views.toLocaleString()}</span>
@@ -96,7 +96,7 @@ const Stories = () => {
   const [isMuted, setIsMuted] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  // Load stories from Firebase
+  // Load stories from backend (MySQL)
   useEffect(() => {
     const unsubscribe = subscribeToStories((data) => {
       setStories(data)
@@ -175,7 +175,7 @@ const Stories = () => {
     }
   ]
 
-  // Use Firebase stories or fallback
+  // Use backend stories or fallback
   const displayStories = stories.length > 0 ? stories : fallbackStories
 
   const openStory = (story: Story, index: number) => {

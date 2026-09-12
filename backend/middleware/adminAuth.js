@@ -4,7 +4,7 @@
 // Protects admin and file management routes.
 
 // Validates the MySQL session cookie (set by POST /auth/login and
-// /auth/signup) instead of the old Firebase ID-token check.
+// /auth/signup) using the MySQL session cookie.
 
 const { getCurrentUser } = require('../utils/auth');
 

@@ -92,25 +92,30 @@ public_html/
 
 ---
 
-## ⚙️ Configurare Firebase (IMPORTANT!)
+## ⚙️ Configurare Backend API (IMPORTANT!)
+
+Toate datele aplicației (formulare, galerie, statistici, testimoniale, membri echipă) sunt stocate în **MySQL** și servite prin backend API. Nu mai este nevoie de nicio configurație Firebase.
 
 ### Înainte de a publica, verifică:
 
-1. **Fișierul `.env.production`** trebuie să conțină:
+1. **Fișierul `.env.production`** (frontend) conține:
    ```env
-   VITE_FIREBASE_API_KEY=your-key
-   VITE_FIREBASE_AUTH_DOMAIN=your-domain.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your-project
-   VITE_FIREBASE_STORAGE_BUCKET=your-bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your-id
-   VITE_FIREBASE_APP_ID=your-app-id
-   VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
-   VITE_FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
+   VITE_BACKEND_URL=https://api.asociatiagreenspace.ro
    ```
 
-2. **În Firebase Console:**
-   - Authentication → Settings → Authorized domains
-   - Adaugă domeniul tău (ex: `www.greenspace.ro`)
+2. **Fișierul `.env`** (backend) conține datele de conectare MySQL:
+   ```env
+   MYSQL_HOST=localhost
+   MYSQL_USER=xxx
+   MYSQL_PASSWORD=xxx
+   MYSQL_DATABASE=xxx
+   ```
+
+3. **Schema MySQL** a fost aplicată pe baza de date din cPanel:
+   ```bash
+   mysql -u USER -p DATABASE < backend/sql/schema.sql
+   ```
+   (creează toate tabelele: `users`, `sessions`, `contacts`, `volunteers`, `members`, `partnerships`, `donations`, `team_members`, `page_views`, `annual_statistics`, `gallery_stories`, `gallery_testimonials`, `gallery_before_after`, `gallery_live_streams`, `homepage_testimonials` și tabelele de metrici)
 
 ---
 
@@ -146,11 +151,12 @@ public_html/
 **Cauză:** Folderele nu au fost încărcate complet  
 **Soluție:** Verifică dacă toate folderele (`images/`, `videos/`, etc.) există
 
-### ❌ Erori Firebase
-**Cauză:** Configurare incorectă sau domeniu neautorizat  
+### ❌ Erori la încărcarea datelor (galerie/statistici)
+**Cauză:** Backend-ul nu e accesibil sau tabelele MySQL lipsesc
 **Soluție:**
-- Verifică `.env.production`
-- Adaugă domeniul în Firebase Console
+- Verifică `VITE_BACKEND_URL` în `.env.production`
+- Rulează `backend/sql/schema.sql` pe baza MySQL
+- Verifică răspunsul `https://api.asociatiagreenspace.ro/health`
 
 ---
 
@@ -159,7 +165,7 @@ public_html/
 ### 1. **Activează SSL/HTTPS**
 - cPanel → SSL/TLS Status
 - Activează pentru domeniul tău
-- ⚠️ OBLIGATORIU pentru Firebase Authentication
+- ⚠️ OBLIGATORIU pentru autentificarea admin (cookies de sesiune)
 
 ### 2. **Configurează Cloudflare** (Opțional)
 - Performanță mai bună
@@ -202,7 +208,7 @@ npm run build
 
 3. **Verifică documentația:**
    - `DEPLOY_CPANEL.md` - Ghid complet
-   - Firebase Documentation
+   - Documentație backend (MySQL)
 
 ---
 
@@ -214,7 +220,7 @@ npm run build
 | `dist/.htaccess` | Configurare server (IMPORTANT!) |
 | `greenspace-deploy.tar.gz` | Arhivă comprimată (alternativă) |
 | `DEPLOY_CPANEL.md` | Ghid detaliat de publicare |
-| `.env.production` | Configurare Firebase |
+| `.env.production` | Configurare backend (`VITE_BACKEND_URL`) |
 
 ---
 

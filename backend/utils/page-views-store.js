@@ -1,183 +1,76 @@
 // ============================================
-// PAGE VIEWS STORE
+// PAGE VIEWS STORE (MySQL)
 // ============================================
-// Stores all page views in a single JSON file instead of one file per view.
-// Uses an append-friendly approach: reads the array, pushes, writes back.
-// Much more efficient for filesystem and querying than thousands of tiny files.
+// Stores page views in the `page_views` table (see sql/schema.sql).
+// Stores page views in MySQL (page_views table).
 
-const fs = require('fs');
-const path = require('path');
-const { dataFolder } = require('./folders');
+const db = require('../config/database');
 const logger = require('./logger');
-const firebaseStore = require('./firebase-store');
-
-const analyticsFolder = path.join(dataFolder, 'analytics');
-const pageViewsFile = path.join(analyticsFolder, 'page-views.json');
-
-// Simple write queue to prevent concurrent read-modify-write on the JSON file.
-// Each queued write waits for the previous one to finish before executing.
-let _writePromise = Promise.resolve();
 
 /**
- * Ensure the analytics folder and file exist
+ * Convert a DATETIME(3) column string to an ISO timestamp (ms precision).
+ * @param {string} value - 'YYYY-MM-DD HH:MM:SS.mmm'
+ * @returns {string}
  */
-function ensureStore() {
-  if (!fs.existsSync(analyticsFolder)) {
-    fs.mkdirSync(analyticsFolder, { recursive: true });
-  }
-  if (!fs.existsSync(pageViewsFile)) {
-    fs.writeFileSync(pageViewsFile, '[]', 'utf8');
-  }
+function toIsoString(value) {
+  if (!value) return new Date().toISOString();
+  const str = String(value).replace(' ', 'T');
+  return new Date(str.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(str) ? str : `${str}Z`).toISOString();
 }
 
 /**
- * Read all page views from the store.
- * Uses Firebase Realtime DB if available, otherwise falls back to file.
+ * Read all page views from the store, oldest first.
  * @returns {Promise<Array<Object>>} Array of page view records
  */
 async function readPageViews() {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      return await firebaseStore.readPageViews();
-    } catch (error) {
-      logger.warn('Firebase readPageViews failed, falling back to file:', error.message);
-    }
-  }
-
-  // Filesystem fallback
-  ensureStore();
   try {
-    const content = fs.readFileSync(pageViewsFile, 'utf8');
-    return JSON.parse(content);
+    const rows = await db.query('SELECT id, path, title, referrer, user_agent, created_at FROM page_views ORDER BY created_at ASC');
+    return rows.map(row => ({
+      id: String(row.id),
+      path: row.path,
+      title: row.title,
+      referrer: row.referrer,
+      userAgent: row.user_agent,
+      timestamp: toIsoString(row.created_at),
+    }));
   } catch (error) {
-    logger.error('Error reading page views store:', error);
+    logger.error('Error reading page views:', error.message);
     return [];
   }
 }
 
 /**
  * Append a single page view to the store.
- * Uses Firebase Realtime DB if available, otherwise falls back to file.
- * File writes are serialised through a simple promise queue so that
- * concurrent requests don't cause lost writes via read-modify-write races.
- * @param {Object} pageView - The page view data to append
+ * @param {Object} pageView - { path, title, timestamp, referrer, userAgent }
  * @returns {Promise<void>}
  */
 async function appendPageView(pageView) {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      await firebaseStore.appendPageView(pageView);
-      return;
-    } catch (error) {
-      logger.warn('Firebase appendPageView failed, falling back to file:', error.message);
-    }
-  }
-
-  // Filesystem fallback — enqueue write to avoid concurrent race conditions
-  _writePromise = _writePromise.then(() => {
-    ensureStore();
-    try {
-      const content = fs.readFileSync(pageViewsFile, 'utf8');
-      const views = JSON.parse(content);
-      views.push(pageView);
-      fs.writeFileSync(pageViewsFile, JSON.stringify(views, null, 2), 'utf8');
-    } catch (error) {
-      logger.error('Error appending page view:', error);
-      throw error;
-    }
-  });
-
-  return _writePromise;
+  await db.query(
+    `INSERT INTO page_views (path, title, referrer, user_agent)
+     VALUES (?, ?, ?, ?)`,
+    [
+      pageView.path,
+      pageView.title ?? null,
+      pageView.referrer ?? null,
+      pageView.userAgent ?? null,
+    ]
+  );
 }
 
 /**
- * Migrate existing per-file page views into the single JSON store.
- * Reads all .json files from the old page-views folder, merges them
- * into the new single-file store, then removes the old individual files.
- * Safe to call multiple times — skips if no old folder exists.
+ * Legacy migration – previously merged old per-file page views into a
+ * single JSON store. All data now lives in MySQL, so nothing to do.
  */
 async function migrateOldPageViews() {
-  const oldFolder = path.join(analyticsFolder, 'page-views');
-  if (!fs.existsSync(oldFolder)) {
-    return;
-  }
-
-  try {
-    const files = fs.readdirSync(oldFolder).filter(f => f.endsWith('.json'));
-    if (files.length === 0) {
-      return;
-    }
-
-    logger.info(`Migrating ${files.length} old page view files to single store...`);
-
-    const oldViews = files.map(file => {
-      const filePath = path.join(oldFolder, file);
-      const content = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(content);
-    });
-
-    // Merge with any existing views in the new store
-    // readPageViews() is async (may hit Firebase), so we must await it.
-    // However, during migration the file fallback is the only reliable
-    // source, so read directly from the local JSON file instead.
-    ensureStore();
-    let existingViews = [];
-    try {
-      const content = fs.readFileSync(pageViewsFile, 'utf8');
-      existingViews = JSON.parse(content);
-    } catch (_ignored) {
-      // Empty or invalid file — start fresh
-    }
-    const merged = existingViews.concat(oldViews);
-    merged.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    ensureStore();
-    fs.writeFileSync(pageViewsFile, JSON.stringify(merged, null, 2), 'utf8');
-
-    // Remove old individual files
-    files.forEach(file => {
-      fs.unlinkSync(path.join(oldFolder, file));
-    });
-
-    // Remove old folder if empty
-    const remaining = fs.readdirSync(oldFolder);
-    if (remaining.length === 0) {
-      fs.rmdirSync(oldFolder);
-    }
-
-    logger.info(`Migration complete: ${oldViews.length} page views migrated.`);
-  } catch (error) {
-    logger.error('Error migrating old page views:', error);
-  }
+  // No-op: data migration to MySQL happens via a manual SQL import.
 }
 
 /**
  * Clear all page views from the store.
- * Uses Firebase if available, otherwise clears the local JSON file.
  * @returns {Promise<void>}
  */
 async function clearPageViews() {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      await firebaseStore.clearPageViews();
-      return;
-    } catch (error) {
-      logger.warn('Firebase clearPageViews failed, falling back to file:', error.message);
-    }
-  }
-
-  // Filesystem fallback — enqueue write to avoid concurrent race conditions
-  _writePromise = _writePromise.then(() => {
-    ensureStore();
-    try {
-      fs.writeFileSync(pageViewsFile, '[]', 'utf8');
-    } catch (error) {
-      logger.error('Error clearing page views:', error);
-      throw error;
-    }
-  });
-
-  return _writePromise;
+  await db.query('TRUNCATE TABLE page_views');
 }
 
 module.exports = {

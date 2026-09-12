@@ -5,7 +5,7 @@
 // /auth/verify-email, /auth/forgot-password, /auth/reset-password.
 
 // Sessions are HTTP-only cookies backed by the MySQL `sessions` table so
-// Firebase Auth can disappear entirely. Passwords are hashed with bcrypt;
+// Passwords are hashed with bcrypt;
 // verification/reset tokens are stored cryptographically hashed (SHA-256).
 
 const express = require('express');
