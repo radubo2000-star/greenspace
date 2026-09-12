@@ -37,7 +37,7 @@ const ImageUploadAdminPage = () => {
         // Get files from images and videos subdirectories
         for (const folder of data.files) {
           if (folder.type === 'directory' && (folder.name === 'images' || folder.name === 'videos')) {
-            const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, signal })
+            const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, credentials: 'include', signal })
             const subData = await subResponse.json()
             
             if (subData.success && subData.files) {

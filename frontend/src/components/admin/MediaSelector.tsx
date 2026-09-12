@@ -63,7 +63,7 @@ const MediaSelector = ({
         if (signal.aborted) return
 
         if (folder.type === 'directory' && (folder.name === 'images' || folder.name === 'videos')) {
-          const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, signal })
+          const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, credentials: 'include', signal })
           if (!subResponse.ok) continue
 
           const subData = await subResponse.json()
