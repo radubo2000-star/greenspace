@@ -55,6 +55,7 @@ Fără acestea deploy-ul folosește fallback-uri de demo. Recomandat:
 | `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` | Backend | datele de conectare la baza MySQL din cPanel (toate tabelele sunt create de `backend/sql/schema.sql`) |
 | `SMTP_USER`, `SMTP_PASS` | Backend | pentru email-uri reale (Gmail/app password etc.) |
 | `ADMIN_EMAIL`, `EMAIL_FROM` | Backend | opțional; default-uri din `.env.example` |
+| `CSRF_SECRET` | Backend | opțional; dacă nu e setat, backend-ul generează și persistă automat un secret în `data/csrf-secret` la primul pornire |
 
 ---
 

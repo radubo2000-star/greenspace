@@ -144,6 +144,7 @@ jobs:
           MYSQL_USER=${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+          CSRF_SECRET=${{ secrets.CSRF_SECRET }}
           ENV_EOF
 
       - name: Package backend
