@@ -27,7 +27,7 @@ const ImageUploadAdminPage = () => {
   const loadFiles = useCallback(async (signal?: AbortSignal) => {
     try {
       const headers = await getAuthHeaders()
-      const response = await fetch(`${backendUrl}/files/list?path=uploads`, { headers, signal })
+      const response = await fetch(`${backendUrl}/files/list?path=uploads`, { headers, credentials: 'include', signal })
       const data = await response.json()
       
       if (data.success && data.files) {
@@ -188,6 +188,7 @@ const ImageUploadAdminPage = () => {
               'Content-Type': 'application/json',
               ...authHeaders,
             },
+            credentials: 'include',
             body: JSON.stringify({
               filename: file.name,
               type: isVideo ? 'video' : 'image'
@@ -396,6 +397,7 @@ const ImageUploadAdminPage = () => {
       const headers = await getAuthHeaders()
       const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers,
       })
 

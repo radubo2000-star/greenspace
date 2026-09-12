@@ -125,6 +125,7 @@ const DataViewerAdminPage = () => {
       const authHeaders = await getAuthHeaders();
       const response = await fetch(`${backendUrl}/admin/data`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           ...authHeaders,

@@ -13,6 +13,7 @@ async function authenticatedRequest<T>(
   const authHeaders = await getAuthHeaders();
   const response = await fetch(url, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders,

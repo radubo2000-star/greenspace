@@ -80,6 +80,18 @@ const config = {
     }
   },
   
+  // MySQL database (auth sessions, users; future tables)
+  mysql: {
+    host: process.env.MYSQL_HOST || '',
+    port: parseInt(process.env.MYSQL_PORT) || 3306,
+    user: process.env.MYSQL_USER || '',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || '',
+  },
+
+  // Frontend URL for auth emails (verification/reset links)
+  frontendBaseUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
+
   // Allowed CORS origins (single source of truth)
   allowedOrigins: [
     'https://asociatiagreenspace.ro',

@@ -11,6 +11,7 @@ const adminRoutes = require('./admin');
 const analyticsRoutes = require('./analytics');
 const filesRoutes = require('./files');
 const teamRoutes = require('./team');
+const authRoutes = require('./auth');
 
 // Import middleware
 const adminAuth = require('../middleware/adminAuth');
@@ -25,9 +26,11 @@ router.use(sanitizeBody);
 
 // Routes that do NOT need CSRF protection:
 // - Health/analytics: public, read-heavy
-// - Admin/files: already protected by Firebase adminAuth middleware
-// - Uploads: already protected by Firebase adminAuth middleware
+// - Auth: session-cookie based (same-site cookie; CSRF handled via SameSite+Origin)
+// - Admin/files: already protected by adminAuth middleware (session cookie)
+// - Uploads: already protected by adminAuth middleware (session cookie|
 router.use('/', cacheHeaders(60), healthRoutes);
+router.use('/auth', cacheHeaders(0), authRoutes);
 router.use('/analytics', cacheHeaders(120), analyticsRoutes);
 router.use('/admin', noCache, adminAuth, adminRoutes);
 router.use('/files', adminAuth, filesRoutes);

@@ -1,7 +1,6 @@
 import { ref as storageRef, deleteObject } from 'firebase/storage';
 import { storage } from '@/lib/firebase/config';
 import { getBackendUrl } from '@/lib/backend-config';
-import { getAuthHeaders } from '@/lib/auth-headers';
 
 /**
  * Detectează tipul de URL și șterge fișierul corespunzător
@@ -85,10 +84,9 @@ const deleteFromBackendStorage = async (url: string): Promise<void> => {
     }
 
     // Apelează API-ul backend pentru ștergere
-    const headers = await getAuthHeaders();
     const response = await fetch(`${backendUrl}/files?path=${encodeURIComponent(path)}`, {
       method: 'DELETE',
-      headers,
+      credentials: 'include',
     });
 
     if (response.ok) {
