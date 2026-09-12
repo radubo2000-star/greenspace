@@ -1,6 +1,11 @@
-import { database } from "@/lib/firebase/config";
-import { ref, push, set, update, remove, onValue, get } from "firebase/database";
-import { deleteMultipleFilesFromUrls } from "./storage-cleanup-service";
+// ============================================
+// GALLERY SERVICE (backend REST)
+// ============================================
+// CRUD + metrics for the gallery (stories, video testimonials,
+// before/after projects, live streams). All data lives in MySQL and
+// is reached through the backend API.
+
+import { getBackendUrl } from '@/lib/backend-config';
 
 // Types
 export interface Story {
@@ -59,126 +64,96 @@ export interface LiveStream {
   timestamp: number;
 }
 
-// ============================================
-// Generic Firebase CRUD Factory
-// ============================================
+/** Single source of truth for API paths (matches backend/routes/gallery.js). */
+const BASE = '/gallery';
 
-interface FirebaseCRUD<T extends { id: string }> {
-  create: (item: Omit<T, "id">) => Promise<string>;
-  update: (id: string, item: Partial<T>) => Promise<void>;
-  delete: (id: string) => Promise<void>;
-  subscribe: (callback: (items: T[]) => void) => () => void;
-  getAll: () => Promise<T[]>;
+async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${getBackendUrl()}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error((data as { error?: string }).error || 'Eroare la comunicarea cu serverul.');
+  }
+  return data as T;
 }
 
-/**
- * Creates a reusable set of CRUD operations for a Firebase Realtime Database path.
- *
- * @param collectionPath - The database path (e.g. "gallery/stories")
- * @param getFileUrls    - Optional function that extracts file URLs from a record
- *                         so they can be deleted from Storage on record deletion.
- */
-function createFirebaseCRUD<T extends { id: string }>(
-  collectionPath: string,
-  getFileUrls?: (item: T) => string[],
-): FirebaseCRUD<T> {
-  const create = async (item: Omit<T, "id">): Promise<string> => {
-    const collectionRef = ref(database, collectionPath);
-    const newItemRef = push(collectionRef);
-    await set(newItemRef, {
-      ...item,
-      timestamp: Date.now(),
+// ============================================
+// Generic CRUD helpers
+// ============================================
+
+function createCRUD<T extends { id: string }, CreateInput = Omit<T, 'id'>>(
+  collection: string,
+  listKey: string,
+) {
+  const create = async (item: CreateInput): Promise<string> => {
+    const data = await api<{ id: string }>(`${BASE}/${collection}`, {
+      method: 'POST',
+      body: JSON.stringify(item),
     });
-    return newItemRef.key!;
+    return data.id;
   };
 
-  const updateItem = async (id: string, item: Partial<T>): Promise<void> => {
-    const itemRef = ref(database, `${collectionPath}/${id}`);
-    await update(itemRef, item);
+  const update = async (id: string, item: Partial<T>): Promise<void> => {
+    await api(`${BASE}/${collection}/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(item),
+    });
   };
 
   const deleteItem = async (id: string): Promise<void> => {
-    const itemRef = ref(database, `${collectionPath}/${id}`);
-
-    if (getFileUrls) {
-      const snapshot = await get(itemRef);
-      if (snapshot.exists()) {
-        const record = snapshot.val() as T;
-        const urls = getFileUrls(record).filter(Boolean);
-        if (urls.length > 0) {
-          await deleteMultipleFilesFromUrls(urls);
-        }
-      }
-    }
-
-    await remove(itemRef);
-  };
-
-  const subscribe = (callback: (items: T[]) => void): (() => void) => {
-    const collectionRef = ref(database, collectionPath);
-
-    const unsubscribe = onValue(collectionRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const items = Object.entries(data).map(([id, item]) => ({
-          id,
-          ...(item as Omit<T, "id">),
-        })) as T[];
-        callback(items);
-      } else {
-        callback([]);
-      }
-    });
-
-    return () => unsubscribe();
+    await api(`${BASE}/${collection}/${id}`, { method: 'DELETE' });
   };
 
   const getAll = async (): Promise<T[]> => {
-    const collectionRef = ref(database, collectionPath);
-    const snapshot = await get(collectionRef);
-    const data = snapshot.val();
-
-    if (data) {
-      return Object.entries(data).map(([id, item]) => ({
-        id,
-        ...(item as Omit<T, "id">),
-      })) as T[];
-    }
-    return [];
+    const data = await api<{ success: boolean; [k: string]: unknown }>(`${BASE}/${collection}`);
+    return (data[listKey] as T[] | undefined) || [];
   };
 
-  return { create, update: updateItem, delete: deleteItem, subscribe, getAll };
+  // Simple polling-based subscription. Backend returns the same array the
+  // admin components use; we poll every 5s and only emit when data changed.
+  const subscribe = (callback: (items: T[]) => void): (() => void) => {
+    let cancelled = false;
+    let lastJson = '';
+
+    const poll = async () => {
+      if (cancelled) return;
+      try {
+        const items = await getAll();
+        const json = JSON.stringify(items);
+        if (json !== lastJson) {
+          lastJson = json;
+          callback(items);
+        }
+      } catch {
+        // Silent — keep polling.
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  };
+
+  return { create, update, delete: deleteItem, subscribe, getAll };
 }
 
 // ============================================
 // Concrete CRUD instances
 // ============================================
 
-const storiesCRUD = createFirebaseCRUD<Story>(
-  "gallery/stories",
-  (story) => {
-    const urls = [story.thumbnail];
-    if (story.url && story.url !== story.thumbnail) {
-      urls.push(story.url);
-    }
-    return urls;
-  },
-);
-
-const testimonialsCRUD = createFirebaseCRUD<Testimonial>(
-  "gallery/testimonials",
-  (testimonial) => [testimonial.avatar, testimonial.thumbnail],
-);
-
-const beforeAfterCRUD = createFirebaseCRUD<BeforeAfterProject>(
-  "gallery/beforeAfter",
-  (project) => [project.beforeImage, project.afterImage],
-);
-
-const liveStreamsCRUD = createFirebaseCRUD<LiveStream>(
-  "gallery/liveStreams",
-  (stream) => [stream.thumbnail],
-);
+const storiesCRUD = createCRUD<Story>('stories', 'stories');
+const testimonialsCRUD = createCRUD<Testimonial>('testimonials', 'testimonials');
+const beforeAfterCRUD = createCRUD<BeforeAfterProject>('before-after', 'projects');
+const liveStreamsCRUD = createCRUD<LiveStream>('live-streams', 'streams');
 
 // ============================================
 // Named exports (preserve existing public API)

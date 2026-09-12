@@ -46,15 +46,13 @@ ssh-copy-id -i ~/.ssh/greenspace_deploy.pub asocia17@asociatiagreenspace.ro
 | `CPANEL_FE_PATH` | Opțional | implicit `/home/asocia17/asociatiagreenspace.ro/public_html` — path-ul `public_html` pe server |
 | `CPANEL_BE_PATH` | Opțional | implicit `/home/asocia17/api-gs` — app root-ul Passenger |
 
-### 2. Firebase / SMTP (recomandat)
+### 2. MySQL / SMTP (recomandat)
 
-Fără acestea deploy-ul merge, dar admin-ul și email-urile folosesc fallback-uri de demo. Recomandat:
+Fără acestea deploy-ul folosește fallback-uri de demo. Recomandat:
 
 | Secret | Pentru | Note |
 |---|---|---|
-| `VITE_FIREBASE_API_KEY` | Frontend | + `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID` (toate `VITE_FIREBASE_*` din `.env.example`|
-| `FIREBASE_SERVICE_ACCOUNT` | Backend | JSON-ul service account (multiline| — pentru verificare token-uri admin |
-| `FIREBASE_DATABASE_URL` | Backend | ex. `https://proiect-default-rtdb.firebaseio.com` |
+| `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` | Backend | datele de conectare la baza MySQL din cPanel (toate tabelele sunt create de `backend/sql/schema.sql`) |
 | `SMTP_USER`, `SMTP_PASS` | Backend | pentru email-uri reale (Gmail/app password etc.) |
 | `ADMIN_EMAIL`, `EMAIL_FROM` | Backend | opțional; default-uri din `.env.example` |
 

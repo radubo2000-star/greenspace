@@ -14,7 +14,7 @@ const Hero = () => {
     }
   }
 
-  // Folosim datele reale din Firebase
+  // Date reale din backend (MySQL)
   // - Evenimente de Plantare: suma tuturor anilor
   // - Participanți: suma tuturor anilor
   // - Voluntari: doar ultimul an (cei activi)

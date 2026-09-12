@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { Image as ImageIcon, Link as LinkIcon, X, Video, Play } from 'lucide-react'
 import { getBackendUrl } from '@/lib/backend-config'
 import { getAuthHeaders } from '@/lib/auth-headers'
@@ -63,7 +64,7 @@ const MediaSelector = ({
         if (signal.aborted) return
 
         if (folder.type === 'directory' && (folder.name === 'images' || folder.name === 'videos')) {
-          const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, signal })
+          const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, credentials: 'include', signal })
           if (!subResponse.ok) continue
 
           const subData = await subResponse.json()
@@ -328,14 +329,12 @@ const MediaSelector = ({
                       <p className="text-gray-500 mb-4">
                         Nu există fișiere încărcate încă
                       </p>
-                      <a
-                        href="/admin/images"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        to="/admin/media"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
                         Încarcă Fișiere
-                      </a>
+                      </Link>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import SEO from '../components/SEO'
 import { Video, Users, Repeat, Radio, Settings, Image, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import StoriesAdminFirebase from '../components/gallery/admin/StoriesAdminFirebase'
-import TestimonialsAdminFirebase from '../components/gallery/admin/TestimonialsAdminFirebase'
-import BeforeAfterAdminFirebase from '../components/gallery/admin/BeforeAfterAdminFirebase'
-import LiveStreamsAdminFirebase from '../components/gallery/admin/LiveStreamsAdminFirebase'
+import StoriesAdmin from '../components/gallery/admin/StoriesAdmin'
+import TestimonialsAdmin from '../components/gallery/admin/TestimonialsAdmin'
+import BeforeAfterAdmin from '../components/gallery/admin/BeforeAfterAdmin'
+import LiveStreamsAdmin from '../components/gallery/admin/LiveStreamsAdmin'
 
 const GalleryAdminPage = () => {
   const [activeTab, setActiveTab] = useState<'stories' | 'testimonials' | 'beforeafter' | 'live'>('stories')
@@ -135,10 +135,10 @@ const GalleryAdminPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {activeTab === 'stories' && <StoriesAdminFirebase />}
-            {activeTab === 'testimonials' && <TestimonialsAdminFirebase />}
-            {activeTab === 'beforeafter' && <BeforeAfterAdminFirebase />}
-            {activeTab === 'live' && <LiveStreamsAdminFirebase />}
+            {activeTab === 'stories' && <StoriesAdmin />}
+            {activeTab === 'testimonials' && <TestimonialsAdmin />}
+            {activeTab === 'beforeafter' && <BeforeAfterAdmin />}
+            {activeTab === 'live' && <LiveStreamsAdmin />}
           </motion.div>
         </div>
       </section>

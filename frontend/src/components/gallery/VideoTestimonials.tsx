@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, X, Heart, MessageCircle, Share2, Loader2 } from 'lucide-react'
-import { useTestimonialLikes, useTestimonialComments } from '@/hooks/use-firebase-metrics'
-import { subscribeToTestimonials, type Testimonial as FirebaseTestimonial } from '@/services/gallery-service'
+import { useTestimonialLikes, useTestimonialComments } from '@/hooks/use-gallery-metrics'
+import { subscribeToTestimonials, type Testimonial as BackendTestimonial } from '@/services/gallery-service'
 import { getImagePreview } from '@/lib/image-preview-helper'
 import { getVideoDuration } from '@/utils/youtube-duration'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube-helpers'
@@ -25,13 +25,13 @@ interface Testimonial {
 
 const VideoTestimonials = () => {
   const [selectedVideo, setSelectedVideo] = useState<Testimonial | null>(null)
-  const [firebaseTestimonials, setFirebaseTestimonials] = useState<FirebaseTestimonial[]>([])
+  const [backendTestimonials, setBackendTestimonials] = useState<BackendTestimonial[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Subscribe to Firebase testimonials
+  // Subscribe to backend testimonials (MySQL)
   useEffect(() => {
     const unsubscribe = subscribeToTestimonials((testimonials) => {
-      setFirebaseTestimonials(testimonials)
+      setBackendTestimonials(testimonials)
       setLoading(false)
     })
 
@@ -126,8 +126,8 @@ const VideoTestimonials = () => {
     }
   ]
 
-  // Convert Firebase testimonials to display format
-  const convertFirebaseToTestimonial = (fb: FirebaseTestimonial): Testimonial => ({
+  // Convert backend testimonials to display format
+  const convertBackendToTestimonial = (fb: BackendTestimonial): Testimonial => ({
     id: fb.id,
     name: fb.name,
     role: fb.role,
@@ -144,9 +144,9 @@ const VideoTestimonials = () => {
       : new Date(fb.timestamp).toLocaleDateString('ro-RO')
   })
 
-  // Use Firebase testimonials if available, otherwise use fallback
-  const displayTestimonials = firebaseTestimonials.length > 0
-    ? firebaseTestimonials.map(convertFirebaseToTestimonial)
+  // Use backend testimonials if available, otherwise use fallback
+  const displayTestimonials = backendTestimonials.length > 0
+    ? backendTestimonials.map(convertBackendToTestimonial)
     : fallbackTestimonials
 
   // Loading state
@@ -159,13 +159,13 @@ const VideoTestimonials = () => {
     )
   }
 
-  // Component pentru fiecare testimonial cu Firebase
+  // Component pentru fiecare testimonial
   const TestimonialCard = ({ testimonial, index }: { testimonial: Testimonial; index: number }) => {
     const { likes, isLiked, toggleLike } = useTestimonialLikes(testimonial.id)
     const { comments } = useTestimonialComments(testimonial.id)
     const [duration, setDuration] = useState<string>('0:00')
 
-    // Calculate duration from YouTube video (always recalculate, ignore old value from Firebase)
+    // Calculate duration from YouTube video (always recalculate)
     useEffect(() => {
       const videoId = extractYouTubeId(testimonial.videoUrl)
       console.log('🎬 Testimonial:', testimonial.name)
@@ -270,7 +270,7 @@ const VideoTestimonials = () => {
                 {testimonial.description}
               </p>
 
-              {/* Actions - Firebase Real-time */}
+              {/* Actions */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <button
                   onClick={(e) => {
@@ -332,7 +332,7 @@ const VideoTestimonials = () => {
   )
 }
 
-// Modal component cu Firebase
+// Modal component
 const VideoModal = ({ video, onClose }: { video: Testimonial; onClose: () => void }) => {
   const { likes, isLiked, toggleLike } = useTestimonialLikes(video.id)
   const { comments, commentsList, addComment } = useTestimonialComments(video.id)
@@ -436,7 +436,7 @@ const VideoModal = ({ video, onClose }: { video: Testimonial; onClose: () => voi
                   {video.description}
                 </p>
 
-                {/* Actions - Firebase Real-time */}
+                {/* Actions */}
                 <div className="flex items-center gap-6 pb-4 border-b">
                   <button
                     onClick={toggleLike}

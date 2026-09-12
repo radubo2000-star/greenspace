@@ -11,7 +11,7 @@ import {
 import ImageSelector from '@/components/admin/ImageSelector'
 import { getImagePreview } from '@/lib/image-preview-helper'
 
-const BeforeAfterAdminFirebase = () => {
+const BeforeAfterAdmin = () => {
   const [items, setItems] = useState<BeforeAfterProject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -389,4 +389,4 @@ const BeforeAfterAdminFirebase = () => {
   )
 }
 
-export default BeforeAfterAdminFirebase
+export default BeforeAfterAdmin

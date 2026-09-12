@@ -37,7 +37,7 @@ const ImageUploadAdminPage = () => {
         // Get files from images and videos subdirectories
         for (const folder of data.files) {
           if (folder.type === 'directory' && (folder.name === 'images' || folder.name === 'videos')) {
-            const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, signal })
+            const subResponse = await fetch(`${backendUrl}/files/list?path=uploads/${folder.name}`, { headers, credentials: 'include', signal })
             const subData = await subResponse.json()
             
             if (subData.success && subData.files) {
@@ -261,6 +261,7 @@ const ImageUploadAdminPage = () => {
           formData.append('file', fileToUpload)
 
           const xhr = new XMLHttpRequest()
+          xhr.withCredentials = true
           
           // Set 1 minute timeout for large files
           xhr.timeout = 60000
@@ -329,6 +330,7 @@ const ImageUploadAdminPage = () => {
             formData.append('file', matchingThumbnailFile)
 
             const xhr = new XMLHttpRequest()
+            xhr.withCredentials = true
             xhr.timeout = 30000 // 30 seconds for thumbnail
 
             xhr.addEventListener('load', () => {

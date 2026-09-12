@@ -38,8 +38,7 @@ function setCache(data) {
 // ============================================
 
 /**
- * Load all form data collections.
- * Uses Firebase Realtime DB via readData() with file fallback.
+ * Load all form data collections from MySQL via readData().
  * @returns {Promise<Object>} All collections
  */
 async function loadAllData() {

@@ -1,32 +1,36 @@
 // ============================================
-// TEAM MEMBERS STORE
+// TEAM MEMBERS STORE (MySQL)
 // ============================================
 // CRUD for team members (pagina „Echipa”).
-// Uses Firebase Realtime Database at the "team" path, with a
-// file-based fallback (backend/data/team/*.json).
+// Data lives in the `team_members` table (see sql/schema.sql).
 
-const fs = require('fs');
-const path = require('path');
-const { dataFolder } = require('./folders');
-const firebaseStore = require('./firebase-store');
-const logger = require('./logger');
-
-const teamFolder = path.join(dataFolder, 'team');
-const TEAM_COLLECTION = 'team';
+const db = require('../config/database');
 
 /**
- * Ensure the team data folder exists.
+ * Map a MySQL row to the camelCase object the API/frontend expects.
  */
-function ensureTeamFolder() {
-  if (!fs.existsSync(teamFolder)) {
-    fs.mkdirSync(teamFolder, { recursive: true });
-  }
+function rowToMember(row) {
+  return {
+    id: String(row.id),
+    name: row.name,
+    role: row.role,
+    email: row.email,
+    image: row.image,
+    description: row.description,
+    order: row.member_order || 0,
+    isActive: !!row.is_active,
+    createdAt: row.created_at
+      ? new Date(String(row.created_at).replace(' ', 'T') + 'Z').toISOString()
+      : undefined,
+    updatedAt: row.updated_at
+      ? new Date(String(row.updated_at).replace(' ', 'T') + 'Z').toISOString()
+      : undefined,
+  };
 }
 
 /**
  * Sort members by order (asc), then createdAt (desc — newest first).
  * Mirrors the old frontend sorting so the admin table stays consistent.
-
  * @param {Array<Object>} members
  * @returns {Array<Object>}
  */
@@ -40,61 +44,12 @@ function sortMembers(members) {
 }
 
 /**
- * Read all members from Firebase Realtime Database.
- * @returns {Promise<Array<Object>>}
- */
-async function readFromFirebase() {
-  const db = firebaseStore.getDatabase();
-  const ref = db.ref(TEAM_COLLECTION);
-  const snapshot = await ref.once('value');
-  const data = snapshot.val();
-
-  if (!data) return [];
-
-  return sortMembers(
-    Object.entries(data).map(([id, value]) => ({
-      id,
-      ...value,
-    }))
-  );
-}
-
-/**
- * Read all members from the filesystem fallback.
- * @returns {Array<Object>}
- */
-function readFromFiles() {
-  ensureTeamFolder();
-
-  const members = [];
-  for (const file of fs.readdirSync(teamFolder)) {
-    if (!file.startsWith('team_') || !file.endsWith('.json')) continue;
-    try {
-      const content = fs.readFileSync(path.join(teamFolder, file), 'utf8');
-      const data = JSON.parse(content);
-      const id = file.replace(/^team_/, '').replace(/\.json$/, '');
-      members.push({ id, ...data });
-    } catch (error) {
-      logger.warn('Failed to read team file:', file, error.message);
-    }
-  }
-
-  return sortMembers(members);
-}
-
-/**
- * Get all team members (Firebase first, file fallback).
+ * Get all team members.
  * @returns {Promise<Array<Object>>}
  */
 async function getTeamMembers() {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      return await readFromFirebase();
-    } catch (error) {
-      logger.warn('Firebase team read failed, falling back to file:', error.message);
-    }
-  }
-  return readFromFiles();
+  const rows = await db.query('SELECT * FROM team_members ORDER BY member_order ASC, id DESC');
+  return sortMembers(rows.map(rowToMember));
 }
 
 /**
@@ -102,120 +57,80 @@ async function getTeamMembers() {
  * @returns {Promise<Object|null>}
  */
 async function getTeamMemberById(id) {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      const db = firebaseStore.getDatabase();
-      const snapshot = await db.ref(`${TEAM_COLLECTION}/${id}`).once('value');
-      if (!snapshot.exists()) return null;
-      return { id, ...snapshot.val() };
-    } catch (error) {
-      logger.warn('Firebase team read failed, falling back to file:', error.message);
-    }
-  }
-
-  const filePath = path.join(teamFolder, `team_${id}.json`);
-  if (!fs.existsSync(filePath)) return null;
-
-  try {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    return { id, ...data };
-  } catch (error) {
-    logger.error('Error reading team member file:', error);
-    return null;
-  }
+  const rows = await db.query('SELECT * FROM team_members WHERE id = ?', [id]);
+  if (!rows.length) return null;
+  return rowToMember(rows[0]);
 }
 
 /**
  * Create a new team member.
+ * @param {Object} data - camelCase payload (name required)
  * @returns {Promise<{id: string}>}
  */
 async function addTeamMember(data) {
-  const memberData = {
-    ...data,
-    createdAt: new Date().toISOString(),
-  };
-
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      const newRef = firebaseStore.getDatabase().ref(TEAM_COLLECTION).push();
-      await newRef.set(memberData);
-      return { id: newRef.key };
-    } catch (error) {
-      logger.warn('Firebase team write failed, falling back to file:', error.message);
-    }
-  }
-
-  ensureTeamFolder();
-  const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  fs.writeFileSync(
-    path.join(teamFolder, `team_${id}.json`),
-    JSON.stringify(memberData, null, 2)
+  const [result] = await db.getPool().execute(
+    `INSERT INTO team_members (name, role, email, image, description, member_order, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.name,
+      data.role ?? null,
+      data.email ?? null,
+      data.image ?? null,
+      data.description ?? null,
+      data.order ?? 0,
+      data.isActive ?? true,
+    ]
   );
-  return { id };
+  return { id: String(result.insertId) };
 }
 
 /**
  * Update an existing team member (merge + updatedAt).
  */
 async function updateTeamMember(id, data) {
-  if (firebaseStore.isFirebaseDbAvailable()) {
+  const fields = [];
+  const params = [];
 
-    try {
-      const db = firebaseStore.getDatabase();
-      const ref = db.ref(`${TEAM_COLLECTION}/${id}`);
-      const snapshot = await ref.once('value');
-      if (!snapshot.exists()) {
-        throw new Error('Team member not found');
-      }
-      await ref.set({
-        ...snapshot.val(),
-        ...data,
-        updatedAt: new Date().toISOString(),
-      });
-      return;
-    } catch (error) {
-      if (error.message === 'Team member not found') {
-        throw error;
-      }
-      logger.warn('Firebase team update failed, falling back to file:', error.message);
+  const columnMap = {
+    name: 'name',
+    role: 'role',
+    email: 'email',
+    image: 'image',
+    description: 'description',
+    order: 'member_order',
+    isActive: 'is_active',
+  };
+
+  for (const [key, column] of Object.entries(columnMap)) {
+    if (data[key] !== undefined) {
+      fields.push(`${column} = ?`);
+      params.push(data[key]);
     }
   }
 
-  const filePath = path.join(teamFolder, `team_${id}.json`);
-  if (!fs.existsSync(filePath)) {
+  if (fields.length === 0) return;
 
-    throw new Error('Team member not found');
-  }
-  const existing = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  fs.writeFileSync(
-    filePath,
-    JSON.stringify({
-      ...existing,
-      ...data,
-      updatedAt: new Date().toISOString(),
-    }, null, 2)
+  fields.push('updated_at = NOW()');
+  params.push(id);
+
+  const [result] = await db.getPool().execute(
+    `UPDATE team_members SET ${fields.join(', ')} WHERE id = ?`,
+    params
   );
+
+  if (result.affectedRows === 0) {
+    const exists = await db.query('SELECT id FROM team_members WHERE id = ?', [id]);
+    if (!exists.length) {
+      throw new Error('Team member not found');
+    }
+  }
 }
 
 /**
- * Delete a team member (idempotent.
+ * Delete a team member (idempotent).
  */
 async function deleteTeamMember(id) {
-  if (firebaseStore.isFirebaseDbAvailable()) {
-    try {
-      await firebaseStore.getDatabase().ref(`${TEAM_COLLECTION}/${id}`).remove();
-      return;
-    } catch (error) {
-      logger.warn('Firebase team delete failed, falling back to file:', error.message);
-      throw error;
-    }
-  }
-
-  const filePath = path.join(teamFolder, `team_${id}.json`);
-  if (fs.existsSync(filePath)) {
-
-    fs.unlinkSync(filePath);
-  }
+  await db.query('DELETE FROM team_members WHERE id = ?', [id]);
 }
 
 module.exports = {

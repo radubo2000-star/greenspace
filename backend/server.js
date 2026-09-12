@@ -47,12 +47,9 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https://firebasestorage.googleapis.com', 'https://*.googleusercontent.com'],
+      imgSrc: ["'self'", 'data:'],
       connectSrc: [
         "'self'",
-        'https://firebasestorage.googleapis.com',
-        'https://*.firebaseio.com',
-        'https://*.googleapis.com',
         config.frontendUrl
       ],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],

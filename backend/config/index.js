@@ -80,7 +80,7 @@ const config = {
     }
   },
   
-  // MySQL database (auth sessions, users; future tables)
+  // MySQL database (auth, forms, gallery, statistics, analytics)
   mysql: {
     host: process.env.MYSQL_HOST || '',
     port: parseInt(process.env.MYSQL_PORT) || 3306,
