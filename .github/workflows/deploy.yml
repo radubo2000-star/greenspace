@@ -203,6 +203,39 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq lftp
           lftp --version | head -1
 
+      - name: Inspect remote FTPS state (temporary diagnostic)
+        shell: bash
+        env:
+          FTPS_PASSWORD: "${{ secrets.FTPS_PASSWORD }}"
+          FTPS_HOST: ${{ secrets.FTPS_HOST || 'asociatiagreenspace.ro' }}
+          FTPS_USER: ${{ secrets.FTPS_USER || 'asocia17' }}
+          FTPS_PORT: ${{ secrets.FTPS_PORT || '21' }}
+          REMOTE_PATH: ${{ secrets.CPANEL_BE_PATH || 'api-gs' }}
+        run: |
+          export LFTP_PASSWORD="$FTPS_PASSWORD"
+          BASE="set cmd:fail-exit no; set ssl:verify-certificate no; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:passive-mode true"
+          probe() { lftp -c "$BASE; open --env-password -u '$FTPS_USER' ftp://$FTPS_HOST:$FTPS_PORT; $1" 2>&1 || true; }
+          echo "=== home listing ==="
+          probe "ls -l"
+          echo "=== target listing [$REMOTE_PATH] ==="
+          probe "ls -l '$REMOTE_PATH'"
+          echo "=== cwd target ==="
+          probe "cd '$REMOTE_PATH' && pwd || echo CWD_TARGET_FAILED"
+          echo "=== cwd node_modules ==="
+          probe "cd '$REMOTE_PATH/node_modules' && pwd || echo CWD_NODE_MODULES_FAILED"
+          echo "=== chmod/type probe: rmdir a fresh dir then mkdir again ==="
+          probe "cd '$REMOTE_PATH' && mkdir _probe_gs && echo MKD_OK || echo MKD_FAIL"
+          echo "=== cwd into freshly made dir ==="
+          probe "cd '$REMOTE_PATH/_probe_gs' && pwd || echo CWD_PROBE_FAILED"
+          echo "=== nested dir probe ==="
+          probe "cd '$REMOTE_PATH/_probe_gs' && mkdir _probe_inner && cd _probe_inner && pwd || echo CWD_NESTED_FAILED"
+          echo "=== cleanup probes ==="
+          probe "cd '$REMOTE_PATH/_probe_gs/_probe_inner' && rmdir . 2>/dev/null; cd '$REMOTE_PATH/_probe_gs' && rmdir _probe_inner 2>/dev/null; cd '$REMOTE_PATH' && rmdir _probe_gs && echo RMDIR_OK || echo RMDIR_FAIL"
+          echo "=== disk/quota-ish: try writing a probe file ==="
+          probe "cd '$REMOTE_PATH' && put /etc/hostname -o _probe_gs_file && echo PUT_OK || echo PUT_FAIL"
+          probe "cd '$REMOTE_PATH' && rm -f _probe_gs_file && echo RM_OK || echo RM_FAIL"
+          echo "=== done ==="
+
       - name: Deploy backend (Passenger app)
         shell: bash
         env:
