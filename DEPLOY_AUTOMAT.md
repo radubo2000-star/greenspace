@@ -34,6 +34,7 @@ fișierele neschimbate sunt sărite, cele șterse din repo sunt șterse de pe se
 | `FTPS_HOST` | Opțional | implicit `asociatiagreenspace.ro` |
 | `FTPS_USER` | Opțional | implicit `asocia17` |
 | `FTPS_PORT` | Opțional | implicit `21` |
+| `FTPS_IMPLICIT` | Opțional | implicit `false`; pune `true` pentru FTPS implicit (de obicei portul `990`) |
 | `FTPS_VERIFY_CERT` | Opțional | implicit `no`; pune `yes` după ce hosting-ul servește un certificat valid |
 | `CPANEL_FE_PATH` | Opțional | implicit `asociatiagreenspace.ro/public_html` |
 | `CPANEL_BE_PATH` | Opțional | implicit `api-gs` |
@@ -61,6 +62,7 @@ Fără acestea deploy-ul folosește fallback-uri de demo.
 | `ADMIN_EMAIL`, `EMAIL_FROM` | Backend | opțional; default-uri în tabelul de mai jos |
 | `CSRF_SECRET` | Backend | opțional; altfel backend-ul generează și persistă un secret în `data/csrf-secret` |
 | `MAX_FILE_SIZE`, `MAX_VIDEO_SIZE` | Backend | opțional; limite de upload în bytes |
+| `ALLOWED_FILE_TYPES` | Backend | opțional; tipuri MIME acceptate la upload, separate prin virgulă |
 
 ---
 
@@ -123,6 +125,54 @@ Opționale, suportate de backend dar nesetate în CI:
 
 ---
 
+## Lista de setat în repo (Settings -> Secrets and variables -> Actions)
+
+Astea sunt **toate** variabilele citite de workflow. Nu mai există nicio
+variabilă `VITE_FIREBASE_*`; datele sunt în MySQL, accesate prin API-ul backend.
+
+Obligatoriu:
+
+| Nume | Tip | Valoare |
+|---|---|---|
+| `FTPS_PASSWORD` | secret | parola contului FTP din cPanel |
+
+Opționale, dar necesare pentru un backend complet funcțional:
+
+| Nume | Tip | Valoare |
+|---|---|---|
+| `MYSQL_HOST` | secret | de obicei `localhost` |
+| `MYSQL_PORT` | secret | de obicei `3306` |
+| `MYSQL_USER` | secret | userul bazei din cPanel |
+| `MYSQL_PASSWORD` | secret | parola bazei |
+| `MYSQL_DATABASE` | secret | numele bazei |
+| `SMTP_USER` | secret | user SMTP pentru email |
+| `SMTP_PASS` | secret | parola SMTP |
+
+Opționale, cu valori implicite în cod:
+
+| Nume | Tip | Implicit |
+|---|---|---|
+| `FTPS_HOST` | secret | `asociatiagreenspace.ro` |
+| `FTPS_USER` | secret | `asocia17` |
+| `FTPS_PORT` | secret | `21` |
+| `FTPS_IMPLICIT` | secret | `false` |
+| `FTPS_VERIFY_CERT` | secret | `no` |
+| `CPANEL_BE_PATH` | secret | `api-gs` |
+| `CPANEL_FE_PATH` | secret | `asociatiagreenspace.ro/public_html` |
+| `SMTP_HOST` | secret | `smtp.gmail.com` |
+| `SMTP_PORT` | secret | `587` |
+| `SMTP_SECURE` | secret | `false` |
+| `ADMIN_EMAIL` | secret | `contact@asociatiagreenspace.ro` |
+| `EMAIL_FROM` | secret | `noreply@asociatiagreenspace.ro` |
+| `MAX_FILE_SIZE` | secret | `10485760` |
+| `MAX_VIDEO_SIZE` | secret | `104857600` |
+| `ALLOWED_FILE_TYPES` | secret | listă implicită de MIME-uri imagine/video |
+| `CSRF_SECRET` | secret | generat automat pe server |
+
+`FTPS_PARALLEL` nu se setează ca secret; are implicit `3` în script.
+
+---
+
 ## Ce rămâne pe server (nu e niciodată suprascris)
 
 Mirror-ul este incremental și **șterge** de pe server fișierele care nu mai
@@ -133,25 +183,37 @@ există în repo. Următoarele căi sunt excluse explicit și rămân intacte:
 | `backend/data/` | date încărcate de utilizatori (contacte, donații, uploads) |
 | `backend/logs/` | loguri Passenger |
 | `backend/tmp/` | marker-ul de restart Passenger |
+| `backend/.env` | credențiale runtime; urcat separat, atomic, fără fereastră de ștergere |
 | `backend/.env.local` | override-uri locale, dacă există |
 | `backend/.htaccess` | rescris de CloudLinux/cPanel - copia din repo ar strica configul |
+| `backend/node_modules` | symlink către virtualenv-ul cPanel; vezi mai jos |
 | `public_html/.well-known/` | fișiere de validare AutoSSL |
 | `public_html/cgi-bin/` | creat și administrat de cPanel |
 
-`backend/.env` **este** urcat (generat în CI). `backend/.htaccess` din repo este
-exclus la staging și nu ajunge pe server.
+`backend/.htaccess` din repo este exclus la staging și nu ajunge pe server.
 
-### De ce `node_modules` e inclus în upload
+Fiecare nume are nevoie de **ambele** forme, `nume` și `nume/`. `lftp` potrivește
+un director real doar cu forma cu slash, iar un symlink (ca `node_modules`) doar
+cu forma fără slash. Dacă lipsește forma potrivită, `--delete` șterge calea de pe
+server în loc s-o sară.
 
-App-ul Passenger rulează un runtime Node fix (vezi `backend/.htaccess`) și nu
-poate instala singur dependențe fără SSH. De aceea `node_modules` de producție
-este construit în CI și urcat împreună cu codul. Toate dependențele de producție
-sunt JavaScript pur, deci funcționează neschimbate pe Node-ul serverului.
+### De ce `node_modules` NU e urcat
 
-Ca să nu re-urce ~1800 fișiere la fiecare deploy, scriptul normalizează
-timestamp-urile din `node_modules` la o valoare derivată din `package-lock.json`.
-Astfel două build-uri ale aceluiași commit sunt identice și al doilea deploy
-transferă doar diferențele reale.
+cPanel ține `node_modules` ca **symlink** către arborele propriu `nodevenv`:
+
+```
+node_modules -> /home/asocia17/nodevenv/api-gs/18/lib/node_modules
+```
+
+Ținta e o cale absolută care nu se rezolvă în chroot-ul serverului FTP, așa că
+mirror-ul eșua cu:
+
+```
+550 Can't change directory to /api-gs/node_modules: No such file or directory
+```
+
+Dependențele sunt instalate de cPanel în acel virtualenv (Setup Node.js App), deci
+nu se urcă deloc: se trimite doar codul aplicației.
 
 ### Cum se repornește backend-ul
 
