@@ -140,6 +140,7 @@ jobs:
           CSRF_SECRET=${{ secrets.CSRF_SECRET }}
           MAX_FILE_SIZE=${{ secrets.MAX_FILE_SIZE || '10485760' }}
           MAX_VIDEO_SIZE=${{ secrets.MAX_VIDEO_SIZE || '104857600' }}
+          ALLOWED_FILE_TYPES=${{ secrets.ALLOWED_FILE_TYPES || 'image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/mpeg' }}
           ENV_EOF
 
       - name: Stage backend (sources + production dependencies)
