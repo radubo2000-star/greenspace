@@ -133,10 +133,10 @@ if [ "$MODE" = "backend" ]; then
   # Dependencies are installed into that virtualenv on the server, so the tree
   # is never uploaded.
   #
-  # .env is excluded too and written separately by upload_backend_env below. If
-  # the mirror owned it, --delete would remove the live file before re-adding
-  # it, and a run that died in that window would leave the app without its
-  # database credentials.
+  # .env is excluded too and written separately by the `put` below. If the
+  # mirror owned it, --delete would remove the live file before re-adding it,
+  # and a run that died in that window would leave the app without its database
+  # credentials.
 else
   # .well-known/ holds AutoSSL validation files; cgi-bin/ is created by cPanel.
   EXCLUDES=(--exclude-glob '.well-known/' --exclude-glob '.well-known'
