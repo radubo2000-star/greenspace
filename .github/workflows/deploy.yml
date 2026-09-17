@@ -52,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -113,9 +113,9 @@ jobs:
       # CONFIGURE + PACKAGE BACKEND
       # ============================================
       # cPanel's Passenger app runs a fixed Node runtime (see backend/.htaccess)
-      # and cannot install dependencies for us without SSH, so the production
-      # node_modules built here are shipped with the app. They are pure
-      # JavaScript, so a CI-installed tree runs unchanged on the server's Node.
+      # and installs dependencies into its own nodevenv; node_modules is a
+      # symlink into that tree, so only application source is uploaded and the
+      # server-side virtualenv supplies the packages.
       - name: Configure backend environment (.env)
         shell: bash
         run: |
@@ -143,14 +143,17 @@ jobs:
           ALLOWED_FILE_TYPES=${{ secrets.ALLOWED_FILE_TYPES || 'image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/mpeg' }}
           ENV_EOF
 
-      - name: Stage backend (sources + production dependencies)
+      - name: Stage backend (application sources)
         shell: bash
         working-directory: backend
         run: |
           set -euo pipefail
 
-          # The server keeps .env, data/, logs/ and CloudLinux's .htaccess; only
-          # code (including the data-seed fixtures) and dependencies are staged.
+          # Only application source is uploaded. Dependencies are deliberately
+          # not: cPanel's "Setup Node.js App" keeps node_modules as a symlink
+          # into its nodevenv tree, which the FTP server cannot follow, and the
+          # virtualenv there is where the app's packages are installed. The
+          # server likewise keeps .env, data/, logs/ and CloudLinux's .htaccess.
           STAGE="$RUNNER_TEMP/backend-stage"
           rm -rf "$STAGE"
           mkdir -p "$STAGE"
@@ -169,12 +172,8 @@ jobs:
             --exclude='./.DS_Store' \
             . | tar -x -C "$STAGE"
 
-          cp package.json package-lock.json "$STAGE/"
-          npm ci --omit=dev --no-audit --no-fund --prefix "$STAGE"
-
           echo "staged files: $(find "$STAGE" -type f | wc -l)"
           echo "staged size:  $(du -sh "$STAGE" | cut -f1)"
-          du -sh "$STAGE/node_modules" | awk '{print "node_modules size: "$1}'
           test -f "$STAGE/.env" && echo "::notice::backend/.env staged for upload"
 
       # ============================================
@@ -269,6 +268,17 @@ jobs:
         if: always()
         shell: bash
         run: |
+          # node_modules is never uploaded (cPanel keeps it as a symlink into its
+          # nodevenv), so a deploy that changes the dependency set leaves the app
+          # unable to boot until someone runs "Run NPM Install" in cPanel. Make
+          # that visible instead of letting it fail as a bare "Cannot find module".
+          deps_changed=false
+          if git rev-parse --verify -q HEAD~1 >/dev/null; then
+            if ! git diff --quiet HEAD~1 HEAD -- backend/package.json backend/package-lock.json; then
+              deps_changed=true
+            fi
+          fi
+
           {
             echo "## Automatic deployment (FTPS)"
             echo ""
@@ -276,4 +286,14 @@ jobs:
             echo "- **Frontend:** https://asociatiagreenspace.ro"
             echo "- **Backend:** https://api.asociatiagreenspace.ro/health"
             echo "- **Transport:** FTPS (lftp), no SSH"
+            if [ "$deps_changed" = "true" ]; then
+              echo ""
+              echo "> [!IMPORTANT]"
+              echo "> \`backend/package.json\` a fost modificat, dar \`node_modules\` nu se urcă pe server."
+              echo "> Rulează în cPanel -> Setup Node.js App -> api-gs: **Run NPM Install**, apoi **Restart**."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$deps_changed" = "true" ]; then
+            echo "::warning::backend/package.json changed - run 'Run NPM Install' then 'Restart' in cPanel -> Setup Node.js App -> api-gs"
+          fi
