@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS sessions (
 -- ============================================
 -- DATA TABLES
 -- ============================================
--- Replaces Firebase Realtime Database. Every former Firebase collection
--- gets a dedicated table below (forms, team, gallery, analytics,
--- statistics, home-page testimonials and their per-item metrics).
+-- Every application collection has a dedicated table below (forms, team,
+-- gallery, analytics, statistics, home-page testimonials and their per-item
+-- metrics).
 
 -- ============================================
 -- FORM SUBMISSIONS

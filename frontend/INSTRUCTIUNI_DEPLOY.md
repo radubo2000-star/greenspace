@@ -94,7 +94,7 @@ public_html/
 
 ## ⚙️ Configurare Backend API (IMPORTANT!)
 
-Toate datele aplicației (formulare, galerie, statistici, testimoniale, membri echipă) sunt stocate în **MySQL** și servite prin backend API. Nu mai este nevoie de nicio configurație Firebase.
+Toate datele aplicației (formulare, galerie, statistici, testimoniale, membri echipă) sunt stocate în **MySQL** și servite prin backend API. Frontend-ul nu are nevoie de nicio configurație de bază de date.
 
 ### Înainte de a publica, verifică:
 
