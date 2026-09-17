@@ -52,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -268,6 +268,17 @@ jobs:
         if: always()
         shell: bash
         run: |
+          # node_modules is never uploaded (cPanel keeps it as a symlink into its
+          # nodevenv), so a deploy that changes the dependency set leaves the app
+          # unable to boot until someone runs "Run NPM Install" in cPanel. Make
+          # that visible instead of letting it fail as a bare "Cannot find module".
+          deps_changed=false
+          if git rev-parse --verify -q HEAD~1 >/dev/null; then
+            if ! git diff --quiet HEAD~1 HEAD -- backend/package.json backend/package-lock.json; then
+              deps_changed=true
+            fi
+          fi
+
           {
             echo "## Automatic deployment (FTPS)"
             echo ""
@@ -275,4 +286,14 @@ jobs:
             echo "- **Frontend:** https://asociatiagreenspace.ro"
             echo "- **Backend:** https://api.asociatiagreenspace.ro/health"
             echo "- **Transport:** FTPS (lftp), no SSH"
+            if [ "$deps_changed" = "true" ]; then
+              echo ""
+              echo "> [!IMPORTANT]"
+              echo "> \`backend/package.json\` a fost modificat, dar \`node_modules\` nu se urcă pe server."
+              echo "> Rulează în cPanel -> Setup Node.js App -> api-gs: **Run NPM Install**, apoi **Restart**."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$deps_changed" = "true" ]; then
+            echo "::warning::backend/package.json changed - run 'Run NPM Install' then 'Restart' in cPanel -> Setup Node.js App -> api-gs"
+          fi

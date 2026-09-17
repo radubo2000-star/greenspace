@@ -215,6 +215,28 @@ mirror-ul eșua cu:
 Dependențele sunt instalate de cPanel în acel virtualenv (Setup Node.js App), deci
 nu se urcă deloc: se trimite doar codul aplicației.
 
+### Când modifici `package.json` (dependențe noi)
+
+Workflow-ul urcă `package.json` și `package-lock.json`, dar **nu** și
+`node_modules`. Deci după un deploy care adaugă o dependență, pe server lipsește
+modulul și aplicația nu pornește (`Cannot find module ...`). Deploy-ul nu poate
+rula `npm ci` singur: serverul nu are SSH (portul 22 e închis), iar FTP-ul nu
+execută comenzi.
+
+Instalarea se face din cPanel, o singură dată după un asemenea deploy:
+
+1. cPanel -> **Setup Node.js App** -> aplicația `api-gs`
+2. butonul **Run NPM Install** (rulează `npm install` în `nodevenv`)
+3. **Restart** aplicația
+
+Butonul citește `package.json` din `api-gs`, deci funcționează pentru că
+workflow-ul tocmai l-a urcat. Pașii 2-3 se pot face și înainte de deploy, dar
+`package.json` de pe server ar fi cel vechi, deci ordinea corectă e: deploy,
+apoi Run NPM Install, apoi Restart.
+
+Workflow-ul afișează un avertisment în sumar când `package.json` sau
+`package-lock.json` se schimbă, ca să nu uiți pasul.
+
 ### Cum se repornește backend-ul
 
 Passenger repornește aplicația când `tmp/restart.txt` își schimbă timestamp-ul.
