@@ -12,7 +12,7 @@ contează dacă hosting-ul nu expune portul SSH.
 | Backend (Node/Express/Passenger) | `backend` + `node_modules` de producție | `api-gs` (app root Passenger) |
 
 Scriptul de upload este `.github/scripts/ftps-deploy.sh` (folosește `lftp`,
-care există deja pe runnerele GitHub). Scriptul face upload **incremental**:
+instalat de workflow pe runner). Scriptul face upload **incremental**:
 fișierele neschimbate sunt sărite, cele șterse din repo sunt șterse de pe server.
 
 ---

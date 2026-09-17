@@ -7,8 +7,8 @@
 #   - Frontend (React/Vite)             -> public_html (asociatiagreenspace.ro)
 #   - Backend  (Node/Express/Passenger) -> /home/asocia17/api-gs
 #
-# No SSH needed: the host only has to accept FTPS logins. The workflow uses
-# lftp, which is preinstalled on GitHub's ubuntu runners. See
+# No SSH needed: the host only has to accept FTPS logins. The workflow
+# installs lftp and uses it for the upload. See
 # .github/scripts/ftps-deploy.sh for the upload logic.
 #
 # One-time setup (required before first run):
@@ -190,6 +190,18 @@ jobs:
             exit 1
           fi
           echo "FTPS_PASSWORD is available"
+
+      # Recent ubuntu runner images no longer ship lftp, so install it here.
+      - name: Install lftp
+        shell: bash
+        run: |
+          if command -v lftp >/dev/null 2>&1; then
+            echo "lftp already available: $(lftp --version | head -1)"
+            exit 0
+          fi
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq lftp
+          lftp --version | head -1
 
       - name: Deploy backend (Passenger app)
         shell: bash
