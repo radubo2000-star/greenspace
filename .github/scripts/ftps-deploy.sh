@@ -111,30 +111,54 @@ fi
 # only on the server is excluded: uploaded/seed data, logs, the Passenger
 # restart marker and the CloudLinux-managed .htaccess (rewritten by cPanel, so
 # the copy in the repo must never clobber it).
+#
+# Each name needs both 'name' and 'name/' forms. lftp matches a real directory
+# against 'name/' and silently misses it when only 'name' is given, while a
+# symlink (see node_modules below) is reported as a plain file and matches only
+# the bare form. Getting this wrong makes --delete remove the live path instead
+# of skipping it.
 if [ "$MODE" = "backend" ]; then
-  EXCLUDES=(--exclude-glob 'data/' --exclude-glob 'logs/' --exclude-glob 'tmp/'
-            --exclude-glob '.htaccess' --exclude-glob '.env.local')
+  EXCLUDES=(--exclude-glob 'data/' --exclude-glob 'data'
+            --exclude-glob 'logs/' --exclude-glob 'logs'
+            --exclude-glob 'tmp/' --exclude-glob 'tmp'
+            --exclude-glob '.htaccess'
+            --exclude-glob '.env.local'
+            --exclude-glob '.env'
+            --exclude-glob 'node_modules/' --exclude-glob 'node_modules')
 
-  # A fresh `npm ci` stamps every file with the build time, so without this the
-  # mirror would see ~1800 changed dependency files on every deploy and re-send
-  # all of them. Pinning mtimes to a value derived from the lockfile keeps the
-  # trees identical between runs of the same commit, so only real changes move.
-  if [ -d "$LOCAL_DIR/node_modules" ] && [ -f "$LOCAL_DIR/package-lock.json" ]; then
-    LOCK_HASH="$(sha256sum "$LOCAL_DIR/package-lock.json" | cut -c1-8)"
-    STAMP_EPOCH=$(( 1600000000 + 16#$LOCK_HASH % 100000000 ))
-    echo "Normalizing mtimes to $(date -u -d "@$STAMP_EPOCH" +%Y-%m-%dT%H:%M:%SZ) (lock $LOCK_HASH)"
-    find "$LOCAL_DIR/node_modules" -exec touch -h -d "@$STAMP_EPOCH" {} + \
-      && echo "  mtimes normalized"
-  fi
+  # cPanel's "Setup Node.js App" keeps node_modules as a symlink into its
+  # nodevenv tree. The target is an absolute path that does not resolve inside
+  # the FTP server's chroot, so mirroring it fails with
+  #   550 Can't change directory to .../node_modules: No such file or directory
+  # Dependencies are installed into that virtualenv on the server, so the tree
+  # is never uploaded.
+  #
+  # .env is excluded too and written separately by upload_backend_env below. If
+  # the mirror owned it, --delete would remove the live file before re-adding
+  # it, and a run that died in that window would leave the app without its
+  # database credentials.
 else
   # .well-known/ holds AutoSSL validation files; cgi-bin/ is created by cPanel.
-  EXCLUDES=(--exclude-glob '.well-known/' --exclude-glob 'cgi-bin/')
+  EXCLUDES=(--exclude-glob '.well-known/' --exclude-glob '.well-known'
+            --exclude-glob 'cgi-bin/' --exclude-glob 'cgi-bin')
 fi
 
 echo "::group::FTPS upload [$MODE]"
 echo "host=$FTPS_HOST port=$FTPS_PORT user=$FTPS_USER scheme=$FTPS_SCHEME"
 echo "local=$LOCAL_DIR remote=$REMOTE_PATH"
 echo "local files: $(find "$LOCAL_DIR" -type f | wc -l)"
+
+# Write .env first and on its own. `put` truncates in place rather than
+# unlinking, so the credentials are never absent from the server.
+if [ "$MODE" = "backend" ] && [ -f "$LOCAL_DIR/.env" ]; then
+  lftp -c "
+$SETTINGS
+open --env-password -u '$FTPS_USER' $FTPS_SCHEME://$FTPS_HOST:$FTPS_PORT
+$PREPARE
+put '$LOCAL_DIR/.env' -o '$REMOTE_PATH/.env'
+"
+  echo "uploaded .env"
+fi
 
 lftp -c "
 $SETTINGS
